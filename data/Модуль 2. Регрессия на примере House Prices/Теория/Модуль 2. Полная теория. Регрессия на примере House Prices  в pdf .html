@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Регрессия на примере House Prices — Теория (PDF)</title>
+<style>
+/* ============================================================
+   PAGE SETUP — LANDSCAPE A4
+   ============================================================ */
+@page {
+    size: A4 landscape;
+    margin: 12mm 12mm 14mm 12mm;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    background: #f5f5f5;
+    color: #1a1a1a;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+body {
+    max-width: 297mm;
+    margin: 0 auto;
+    background: #fff;
+}
+
+/* ============================================================
+   PRINT MEDIA
+   ============================================================ */
+@media print {
+    html, body {
+        background: #fff;
+        font-size: 10pt;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .no-print { display: none !important; }
+    .cover { page-break-after: always; }
+    .toc { page-break-after: always; }
+    .part { page-break-before: always; }
+    h2, h3, h4 { page-break-after: avoid; }
+    table, pre, .box, .card, .metric-grid, .split,
+    .flow, .pipeline, .matrix, .formula, .part-header {
+        page-break-inside: avoid;
+    }
+    tr, li { page-break-inside: avoid; }
+    .part:first-of-type { page-break-before: auto; }
+}
+
+/* ============================================================
+   PRINT BUTTON
+   ============================================================ */
+.print-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: linear-gradient(135deg, #0066cc, #004499);
+    color: #fff;
+    border: none;
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0,102,204,0.4);
+    font-family: 'Segoe UI', sans-serif;
+    z-index: 1000;
+    transition: all 0.3s;
+}
+.print-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0,102,204,0.5);
+}
+
+.print-hint {
+    position: fixed;
+    bottom: 24px;
+    right: 220px;
+    background: #fff8ec;
+    color: #946200;
+    border: 1px solid #d97706;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 11px;
+    max-width: 340px;
+    line-height: 1.4;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(217,119,6,0.2);
+}
+
+/* ============================================================
+   COVER
+   ============================================================ */
+.cover {
+    height: 195mm;
+    padding: 25mm 20mm 15mm;
+    background: linear-gradient(135deg, #0a1a3a 0%, #1a2a5a 100%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+.cover::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,150,255,0.3), transparent 70%);
+}
+.cover::after {
+    content: '';
+    position: absolute;
+    bottom: -150px; left: -100px;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,0,110,0.2), transparent 70%);
+}
+.cover-content {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+    gap: 40px;
+    align-items: center;
+}
+.cover-emoji {
+    font-size: 70px;
+    margin-bottom: 20px;
+    display: block;
+    line-height: 1;
+}
+.cover h1 {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1.12;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+}
+.cover h1 span {
+    background: linear-gradient(90deg, #4aa3ff, #ff4a9e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.cover .subtitle {
+    font-size: 16px;
+    color: #a0b8d8;
+    font-weight: 300;
+    margin-bottom: 20px;
+}
+.cover-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 12px;
+}
+.cover-meta-item {
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.08);
+    border-left: 3px solid #4aa3ff;
+    border-radius: 4px;
+    color: #d0e0f0;
+}
+.cover-meta-item b { color: #4aa3ff; }
+.cover-footer {
+    position: relative;
+    z-index: 1;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 11px;
+    color: #6a8ab8;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    padding-top: 14px;
+    text-align: center;
+}
+
+/* ============================================================
+   TOC
+   ============================================================ */
+.toc { padding: 5px 0; }
+.toc h2 {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: #0a1a3a;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 3px solid #0066cc;
+    column-span: all;
+}
+.toc-grid { column-count: 2; column-gap: 40px; column-rule: 1px dashed #ccc; }
+.toc-list { list-style: none; }
+.toc-list li {
+    padding: 5px 0;
+    border-bottom: 1px dashed #e0e0e0;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 10pt;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+.toc-list li.lvl-1 {
+    font-weight: 700;
+    color: #0066cc;
+    margin-top: 6px;
+    font-size: 11pt;
+    border-bottom: 1.5px solid #cce0f5;
+}
+.toc-list li.lvl-2 {
+    padding-left: 16px;
+    font-weight: 400;
+    color: #333;
+    font-size: 9.5pt;
+}
+
+/* ============================================================
+   PARTS
+   ============================================================ */
+.part { padding-top: 2px; }
+.part-header {
+    page-break-inside: avoid;
+    page-break-after: avoid;
+    margin-bottom: 10px;
+}
+.part-title {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0a1a3a;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    border-bottom: 3px solid #0066cc;
+}
+.part-number {
+    display: inline-block;
+    background: #0066cc;
+    color: #fff;
+    padding: 3px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+    font-weight: 700;
+    font-family: 'Segoe UI', sans-serif;
+}
+h2 {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0a1a3a;
+    margin: 16px 0 8px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid #e0e0e0;
+    page-break-after: avoid;
+}
+h3 {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #004499;
+    margin: 12px 0 6px;
+    page-break-after: avoid;
+}
+h4 {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: #333;
+    margin: 10px 0 5px;
+}
+p { margin-bottom: 8px; text-align: justify; hyphens: auto; }
+ul, ol { margin: 6px 0 10px 22px; }
+li { margin-bottom: 4px; }
+strong { color: #0a1a3a; }
+code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background: #f0f4f8;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 9.5pt;
+    color: #c7254e;
+    border: 1px solid #e0e6ec;
+}
+
+/* ============================================================
+   BOXES
+   ============================================================ */
+.box {
+    padding: 12px 16px;
+    margin: 12px 0;
+    border-radius: 6px;
+    border-left: 4px solid #0066cc;
+    background: #f0f6fc;
+    page-break-inside: avoid;
+    font-size: 10pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+.box.warn { border-color: #d97706; background: #fff8ec; }
+.box.danger { border-color: #dc2626; background: #fef2f2; }
+.box.success { border-color: #16a34a; background: #f0fdf4; }
+.box.info { border-color: #7c3aed; background: #f5f3ff; }
+.box-title {
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 700;
+    font-size: 11.5pt;
+    margin-bottom: 5px;
+    color: #0a1a3a;
+}
+
+/* ============================================================
+   TABLES
+   ============================================================ */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 9pt;
+    font-family: 'Segoe UI', sans-serif;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+th, td {
+    padding: 6px 9px;
+    text-align: left;
+    border: 1px solid #d0d8e0;
+    vertical-align: top;
+}
+th {
+    background: #0066cc;
+    color: #fff;
+    font-weight: 700;
+    font-size: 8.5pt;
+    letter-spacing: 0.3px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+tr:nth-child(even) td { background: #f8fafc; }
+td code { font-size: 8.5pt; padding: 0 3px; }
+
+/* ============================================================
+   CODE BLOCKS
+   ============================================================ */
+pre {
+    background: #f6f8fa;
+    border: 1px solid #d0d8e0;
+    border-left: 4px solid #0066cc;
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin: 10px 0;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 8.5pt;
+    line-height: 1.45;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    page-break-inside: avoid;
+    color: #1a1a1a;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+pre .cmt { color: #6a737d; font-style: italic; }
+pre .kw { color: #d73a49; font-weight: 600; }
+pre .str { color: #032f62; }
+pre .num { color: #005cc5; }
+pre .fn { color: #6f42c1; }
+pre .warn { color: #d97706; font-weight: 700; }
+
+/* ============================================================
+   METRIC CARDS
+   ============================================================ */
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 12px 0;
+    page-break-inside: avoid;
+}
+.metric {
+    padding: 12px 8px;
+    text-align: center;
+    border: 2px solid #0066cc;
+    border-radius: 6px;
+    background: #f0f6fc;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+.metric-value {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: #0066cc;
+    line-height: 1.1;
+}
+.metric-label {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 8.5pt;
+    color: #555;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   PIPELINE
+   ============================================================ */
+.pipeline {
+    margin: 14px 0;
+    page-break-inside: avoid;
+    column-count: 2;
+    column-gap: 20px;
+}
+.pipeline-row {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    background: #f8fafc;
+    border: 1px solid #e0e6ec;
+    border-radius: 6px;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+.pipeline-num {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: #0066cc;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800;
+    font-size: 12px;
+    font-family: 'Segoe UI', sans-serif;
+}
+.pipeline-text { font-size: 9.5pt; line-height: 1.45; }
+.pipeline-text strong { color: #0066cc; }
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+    padding: 12px 14px;
+    margin: 8px 0;
+    border: 1px solid #d0d8e0;
+    border-left: 4px solid #0066cc;
+    border-radius: 4px;
+    background: #fafbfc;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+.card h4 { margin-top: 0; color: #004499; }
+.card.warn { border-left-color: #d97706; background: #fff8ec; }
+.card.success { border-left-color: #16a34a; background: #f0fdf4; }
+.card.danger { border-left-color: #dc2626; background: #fef2f2; }
+
+/* ============================================================
+   SPLIT
+   ============================================================ */
+.split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+}
+
+/* ============================================================
+   FORMULA
+   ============================================================ */
+.formula {
+    text-align: center;
+    padding: 12px;
+    margin: 10px 0;
+    background: #f8fafc;
+    border: 1px solid #d0d8e0;
+    border-radius: 6px;
+    font-family: 'Consolas', monospace;
+    font-size: 12.5pt;
+    color: #004499;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* ============================================================
+   FLOW
+   ============================================================ */
+.flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 14px 0;
+    padding: 12px;
+    background: #f0f6fc;
+    border: 1px solid #c8d8e8;
+    border-radius: 6px;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+.flow-step {
+    padding: 6px 10px;
+    background: #fff;
+    border: 1.5px solid #0066cc;
+    border-radius: 4px;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 9pt;
+    font-weight: 600;
+    color: #004499;
+}
+.flow-arrow {
+    color: #0066cc;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* ============================================================
+   FOOTER NOTE
+   ============================================================ */
+.footer-note {
+    margin-top: 24px;
+    padding-top: 12px;
+    border-top: 1px solid #ccc;
+    font-size: 9pt;
+    color: #888;
+    text-align: center;
+    font-style: italic;
+}
+
+/* ============================================================
+   2-COLUMN TABLES
+   ============================================================ */
+.tables-2col { column-count: 2; column-gap: 20px; }
+.tables-2col table { page-break-inside: avoid; margin-bottom: 12px; }
+.tables-2col h2 { column-span: all; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ Сохранить в PDF</button>
+
+<div class="print-hint no-print">
+    ⚙️ <b>Перед сохранением:</b><br>
+    • Снимите галочку «Верхние и нижние колонтитулы»<br>
+    • Включите «Фон и графика»<br>
+    • Ориентация: Альбомная (Landscape)
+</div>
+
+<!-- ============================================================= -->
+<!-- COVER -->
+<!-- ============================================================= -->
+<div class="cover">
+    <div class="cover-content">
+        <div>
+            <span class="cover-emoji">🏠</span>
+            <h1>Регрессия: полная теория<br><span>House Prices — Advanced Regression Techniques</span></h1>
+            <p class="subtitle">От OLS до регуляризации — полный путь ML-инженера</p>
+        </div>
+        <div>
+            <div class="cover-meta">
+                <div class="cover-meta-item">🎓 <b>ТИУ</b> · IT-направление</div>
+                <div class="cover-meta-item">👥 Группа: <b>ПКТб-23-1</b></div>
+                <div class="cover-meta-item">📊 Датасет: <b>House Prices</b> (Kaggle)</div>
+                <div class="cover-meta-item">🎯 Признаков: <b>79</b> · Строк: <b>1460 train + 1459 test</b></div>
+                <div class="cover-meta-item">📐 Формат: <b>A4 Landscape</b></div>
+                <div class="cover-meta-item">📅 Учебный год: <b>2025/2026</b></div>
+            </div>
+        </div>
+    </div>
+    <div class="cover-footer">
+        Конспект теории · 40 слайдов · Полный пайплайн регрессии<br>
+        Включает: OLS, Ridge, Lasso, ElasticNet, кросс-валидацию, GridSearchCV, диагностику
+    </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- TOC -->
+<!-- ============================================================= -->
+<div class="toc">
+    <h2>📑 Содержание</h2>
+    <div class="toc-grid">
+        <ul class="toc-list">
+            <li class="lvl-1"><span>Часть 1. Введение в регрессию</span><span>3</span></li>
+            <li class="lvl-2"><span>Что такое регрессия</span><span>3</span></li>
+            <li class="lvl-2"><span>Регрессия vs Классификация</span><span>3</span></li>
+            <li class="lvl-2"><span>Датасет House Prices</span><span>4</span></li>
+            <li class="lvl-2"><span>Структура и особенности</span><span>4</span></li>
+
+            <li class="lvl-1"><span>Часть 2. Линейная регрессия и OLS</span><span>5</span></li>
+            <li class="lvl-2"><span>Модель линейной регрессии</span><span>5</span></li>
+            <li class="lvl-2"><span>Метод наименьших квадратов</span><span>5</span></li>
+            <li class="lvl-2"><span>Свойства OLS</span><span>6</span></li>
+
+            <li class="lvl-1"><span>Часть 3. Регуляризация</span><span>7</span></li>
+            <li class="lvl-2"><span>Зачем нужна регуляризация</span><span>7</span></li>
+            <li class="lvl-2"><span>Ridge (L2)</span><span>7</span></li>
+            <li class="lvl-2"><span>Lasso (L1)</span><span>8</span></li>
+            <li class="lvl-2"><span>Геометрическая интерпретация</span><span>8</span></li>
+            <li class="lvl-2"><span>ElasticNet</span><span>9</span></li>
+            <li class="lvl-2"><span>Сравнение методов</span><span>9</span></li>
+        </ul>
+
+        <ul class="toc-list">
+            <li class="lvl-1"><span>Часть 4. Предобработка данных</span><span>10</span></li>
+            <li class="lvl-2"><span>Типы пропусков</span><span>10</span></li>
+            <li class="lvl-2"><span>Стратегии обработки</span><span>10</span></li>
+            <li class="lvl-2"><span>Обработка выбросов</span><span>11</span></li>
+            <li class="lvl-2"><span>Логарифмирование целевой</span><span>11</span></li>
+            <li class="lvl-2"><span>Кодирование категорий</span><span>12</span></li>
+            <li class="lvl-2"><span>Масштабирование</span><span>12</span></li>
+            <li class="lvl-2"><span>Feature Engineering</span><span>13</span></li>
+
+            <li class="lvl-1"><span>Часть 5. Метрики и валидация</span><span>14</span></li>
+            <li class="lvl-2"><span>Метрики регрессии</span><span>14</span></li>
+            <li class="lvl-2"><span>Кросс-валидация</span><span>14</span></li>
+            <li class="lvl-2"><span>GridSearchCV</span><span>15</span></li>
+            <li class="lvl-2"><span>Утечка данных</span><span>15</span></li>
+            <li class="lvl-2"><span>Анализ остатков</span><span>16</span></li>
+            <li class="lvl-2"><span>Переобучение и недообучение</span><span>16</span></li>
+            <li class="lvl-2"><span>Важность признаков</span><span>17</span></li>
+
+            <li class="lvl-1"><span>Часть 6. Практика и выводы</span><span>18</span></li>
+            <li class="lvl-2"><span>Полный пайплайн</span><span>18</span></li>
+            <li class="lvl-2"><span>Ключевые формулы</span><span>18</span></li>
+            <li class="lvl-2"><span>Когда что использовать</span><span>19</span></li>
+            <li class="lvl-2"><span>Ожидаемые результаты</span><span>19</span></li>
+            <li class="lvl-2"><span>Частые ошибки</span><span>20</span></li>
+            <li class="lvl-2"><span>Чек-лист</span><span>20</span></li>
+            <li class="lvl-2"><span>Ключевые выводы</span><span>21</span></li>
+            <li class="lvl-2"><span>Источники</span><span>21</span></li>
+        </ul>
+    </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- PART 1 -->
+<!-- ============================================================= -->
+<div class="part">
+    <div class="part-header">
+        <span class="part-number">ЧАСТЬ 1</span>
+        <h1 class="part-title">Введение в регрессию</h1>
+    </div>
+
+    <div class="split">
+        <div>
+            <h2>Что такое регрессия?</h2>
+            <p><strong>Регрессия</strong> — это класс задач машинного обучения с учителем, в которых целевая переменная является <strong>непрерывной величиной</strong>. Модель учится предсказывать число, а не метку класса.</p>
+
+            <h3>Математическая постановка</h3>
+            <p><strong>Дано:</strong> обучающая выборка</p>
+            <div class="formula">D = {(x₁, y₁), ..., (xₙ, yₙ)}</div>
+            <ul>
+                <li><strong>xᵢ ∈ ℝᵖ</strong> — вектор из p признаков</li>
+                <li><strong>yᵢ ∈ ℝ</strong> — непрерывная целевая</li>
+            </ul>
+            <p><strong>Найти:</strong> функцию <code>f: ℝᵖ → ℝ</code>, минимизирующую ошибку предсказания.</p>
+
+            <h2>Регрессия vs Классификация</h2>
+            <table>
+                <thead>
+                    <tr><th>Аспект</th><th>Регрессия</th><th>Классификация</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><b>Целевая</b></td><td>Непрерывная</td><td>Дискретная</td></tr>
+                    <tr><td><b>Пример</b></td><td>$250 000</td><td>0 или 1</td></tr>
+                    <tr><td><b>Выход</b></td><td>Число</td><td>Вероятность</td></tr>
+                    <tr><td><b>Метрики</b></td><td>RMSE, MAE, R²</td><td>Accuracy, F1</td></tr>
+                    <tr><td><b>Потери</b></td><td>MSE, MAE</td><td>Log-Loss</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div>
+            <h2>Датасет House Prices</h2>
+            <p>Датасет создан <strong>Дином Де Коком (Dean De Cock)</strong> в 2011 году как современная замена Boston Housing Dataset.</p>
+            <p>Содержит данные о жилых домах в <strong>Эймсе, штат Айова, США</strong>, проданных в 2006–2010 гг.</p>
+
+            <h3>Задача</h3>
+            <p>Предсказать <strong>цену продажи жилья</strong> на основе <strong>79 признаков</strong>.</p>
+            <ul>
+                <li>🎯 Тип задачи: <strong>регрессия</strong></li>
+                <li>📊 Целевая: <code>SalePrice</code></li>
+            </ul>
+
+            <div class="metric-grid">
+                <div class="metric"><div class="metric-value">2919</div><div class="metric-label">Всего</div></div>
+                <div class="metric"><div class="metric-value">1460</div><div class="metric-label">Train</div></div>
+                <div class="metric"><div class="metric-value">1459</div><div class="metric-label">Test</div></div>
+                <div class="metric"><div class="metric-value">79</div><div class="metric-label">Признаков</div></div>
+            </div>
+
+            <h3>Структура признаков</h3>
+            <table>
+                <thead>
+                    <tr><th>Тип</th><th>Кол-во</th><th>Примеры</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Числовые</td><td>36</td><td>LotArea, YearBuilt, GrLivArea</td></tr>
+                    <tr><td>Порядковые</td><td>23</td><td>ExterQual, BsmtQual, KitchenQual</td></tr>
+                    <tr><td>Номинальные</td><td>20</td><td>Neighborhood, SaleType, GarageType</td></tr>
+                </tbody>
+            </table>
+
+            <div class="box warn">
+                <div class="box-title">⚠️ Особенности</div>
+                Реалистичные пропуски, скошенная целевая, мультиколлинеарность, выбросы, риск переобучения — всё, что делает датасет идеальным для обучения.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- PART 2 -->
+<!-- ============================================================= -->
+<div class="part">
+    <div class="part-header">
+        <span class="part-number">ЧАСТЬ 2</span>
+        <h1 class="part-title">Линейная регрессия и OLS</h1>
+    </div>
+
+    <div class="split">
+        <div>
+            <h2>Модель линейной регрессии</h2>
+            <div class="formula">ŷ = w₀ + w₁·x₁ + w₂·x₂ + ... + wₚ·xₚ</div>
+            <p>где <strong>w₀</strong> — смещение (bias), <strong>w₁,...,wₚ</strong> — веса (коэффициенты).</p>
+
+            <h3>В матричной форме</h3>
+            <div class="formula">ŷ = X·w</div>
+            <ul>
+                <li><strong>X</strong> ∈ ℝⁿˣ⁽ᵖ⁺¹⁾ — матрица признаков</li>
+                <li><strong>w</strong> ∈ ℝᵖ⁺¹ — вектор весов</li>
+                <li><strong>n</strong> — число объектов, <strong>p</strong> — число признаков</li>
+            </ul>
+
+            <h3>Идея метода</h3>
+            <p>Модель предполагает <strong>линейную зависимость</strong> целевой от признаков. Каждый признак влияет на целевую <strong>независимо</strong> с весом <strong>wⱼ</strong>.</p>
+
+            <h2>Метод наименьших квадратов (OLS)</h2>
+            <p><strong>OLS (Ordinary Least Squares)</strong> — находит веса, при которых сумма квадратов отклонений предсказаний от истинных значений минимальна.</p>
+
+            <h3>Функция потерь (MSE)</h3>
+            <div class="formula">L(w) = (1/n) · Σᵢ (yᵢ − ŷᵢ)²</div>
+        </div>
+
+        <div>
+            <h3>Аналитическое решение</h3>
+            <p>Чтобы найти минимум, берём производную по <strong>w</strong> и приравниваем к нулю:</p>
+            <div class="formula">ŵ = (XᵀX)⁻¹·Xᵀ·y</div>
+            <p>Это <strong>нормальное уравнение</strong>. Работает, если <strong>XᵀX</strong> обратима.</p>
+
+            <div class="box danger">
+                <div class="box-title">⚠️ Проблемы OLS</div>
+                <ul>
+                    <li><strong>Переобучение</strong> при p ≈ n или p > n</li>
+                    <li><strong>Мультиколлинеарность</strong> → XᵀX плохо обусловлена</li>
+                    <li><strong>Выбросы</strong> сильно искажают веса</li>
+                    <li><strong>Скошенность</strong> целевой нарушает предпосылки</li>
+                </ul>
+            </div>
+
+            <h2>Свойства OLS-оценки</h2>
+            <div class="split">
+                <div class="card success">
+                    <h4>🎯 Несмещённость</h4>
+                    <p>E[ŵ] = w<sub>true</sub> при выполнении предпосылок.</p>
+                </div>
+                <div class="card success">
+                    <h4>⚡ Эффективность</h4>
+                    <p>Наименьшая дисперсия (теорема Гаусса-Маркова).</p>
+                </div>
+                <div class="card success">
+                    <h4>📈 Состоятельность</h4>
+                    <p>ŵ → w<sub>true</sub> при n → ∞.</p>
+                </div>
+                <div class="card">
+                    <h4>📋 Предпосылки</h4>
+                    <p>Линейность, независимость, E[ε|x]=0, гомоскедастичность, нет мультиколлинеарности.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- PART 3 -->
+<!-- ============================================================= -->
+<div class="part">
+    <div class="part-header">
+        <span class="part-number">ЧАСТЬ 3</span>
+        <h1 class="part-title">Регуляризация: Ridge, Lasso, ElasticNet</h1>
+    </div>
+
+    <h2>Зачем нужна регуляризация?</h2>
+    <div class="box danger">
+        🚨 При <strong>большом числе признаков</strong> (в House Prices — 79) OLS-решение <strong>переобучается</strong>: модель запоминает шум в обучающих данных, а на новых данных показывает плохой результат.
+    </div>
+
+    <div class="split">
+        <div class="card danger">
+            <h4>⚠️ Симптомы переобучения</h4>
+            <ul>
+                <li>Ошибка на train очень низкая</li>
+                <li>Ошибка на test высокая</li>
+                <li>Веса модели огромные по модулю</li>
+                <li>Модель чувствительна к малейшим изменениям</li>
+            </ul>
+        </div>
+        <div class="card success">
+            <h4>✅ Идея регуляризации</h4>
+            <p>Добавить <strong>штраф за большие веса</strong> к функции потерь.</p>
+            <div class="formula" style="font-size:11pt; padding:8px;">L = MSE + α · Штраф(w)</div>
+            <p>Это заставляет модель искать <strong>простое</strong> решение.</p>
+        </div>
+    </div>
+
+    <div class="split">
+        <div>
+            <h2>Ridge-регрессия (L2)</h2>
+            <div class="formula">L<sub>Ridge</sub>(w) = MSE + α · Σⱼ wⱼ²</div>
+            <p><strong>Аналитическое решение:</strong></p>
+            <div class="formula">ŵ = (XᵀX + αI)⁻¹·Xᵀ·y</div>
+            <p>Добавление <strong>αI</strong> гарантирует обратимость матрицы <strong>XᵀX</strong> даже при мультиколлинеарности.</p>
+            <ul>
+                <li>Веса <strong>уменьшаются</strong>, но <strong>не обнуляются</strong></li>
+                <li>Хорошо работает при мультиколлинеарности</li>
+                <li>Не выполняет отбор признаков</li>
+                <li>Эквивалентна MAP-оценке с гауссовским априорным распределением</li>
+            </ul>
+        </div>
+        <div>
+            <h2>Lasso-регрессия (L1)</h2>
+            <div class="formula">L<sub>Lasso</sub>(w) = MSE + α · Σⱼ |wⱼ|</div>
+            <p>L1-штраф имеет <strong>«углы»</strong> на осях. При оптимизации минимум часто попадает <strong>именно в угол</strong> — некоторые веса <strong>точно обнуляются</strong>.</p>
+            <ul>
+                <li><strong>Автоматический отбор признаков</strong></li>
+                <li>Разреженное решение (sparse)</li>
+                <li>Устойчивость к выбросам</li>
+                <li>Эквивалентна MAP с лапласовским априорным</li>
+            </ul>
+            <div class="box warn">
+                ⚠️ При сильно коррелированных признаках Lasso выбирает <strong>произвольный</strong> — может оставить «не тот».
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- PART 3 CONTINUED -->
+<!-- ============================================================= -->
+<div class="part">
+    <h1 class="part-title">Регуляризация (продолжение)</h1>
+
+    <h2>Геометрическая интерпретация</h2>
+    <p>Регуляризация — это <strong>ограничение</strong> на область допустимых весов. Форма ограничения определяет поведение:</p>
+
+    <div class="split">
+        <div class="card">
+            <h4>⭕ Ridge (L2)</h4>
+            <p><strong>Ограничение:</strong> ||w||₂² ≤ t — <strong>круг</strong> (сфера в p-мерном пространстве).</p>
+            <p>Минимум MSE + штраф обычно <strong>касается границы круга</strong> — обе координаты ненулевые.</p>
+            <p>➡️ Веса уменьшаются, но не обнуляются.</p>
+        </div>
+        <div class="card">
+            <h4>💎 Lasso (L1)</h4>
+            <p><strong>Ограничение:</strong> ||w||₁ ≤ t — <strong>ромб</strong>.</p>
+            <p>У ромба есть <strong>вершины на осях</strong>. Минимум часто попадает <strong>в угол</strong> — одна координата обнуляется.</p>
+            <p>➡️ Автоматический отбор признаков!</p>
+        </div>
+    </div>
+
+    <div class="box success">
+        🎯 Именно <strong>форма ограничения</strong> (круг vs ромб) объясняет разницу в поведении Ridge и Lasso.
+    </div>
+
+    <div class="split">
+        <div>
+            <h2>ElasticNet — компромисс</h2>
+            <div class="formula">L(w) = MSE + α · (ρ·Σ|wⱼ| + (1−ρ)/2 · Σwⱼ²)</div>
+            <p>где <strong>α</strong> — общая сила регуляризации, <strong>ρ ∈ [0, 1]</strong> — баланс L1/L2.</p>
+            <ul>
+                <li><strong>ρ = 0</strong> → чистый Ridge</li>
+                <li><strong>ρ = 1</strong> → чистый Lasso</li>
+                <li><strong>0 &lt; ρ &lt; 1</strong> → компромисс</li>
+            </ul>
+            <h3>Преимущества</h3>
+            <ul>
+                <li>Работает лучше Lasso при коррелированных признаках</li>
+                <li>Работает лучше Ridge при большом числе признаков</li>
+                <li>Стабильнее Lasso</li>
+                <li>Может выбрать группу коррелированных признаков</li>
+            </ul>
+        </div>
+        <div>
+            <h2>Сравнение методов</h2>
+            <table>
+                <thead>
+                    <tr><th>Метод</th><th>Штраф</th><th>Отбор</th><th>Мультикол.</th><th>Гиперпар.</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><b>OLS</b></td><td>—</td><td>❌</td><td>❌</td><td>—</td></tr>
+                    <tr><td><b>Ridge</b></td><td>L2</td><td>❌</td><td>✅</td><td>α</td></tr>
+                    <tr><td><b>Lasso</b></td><td>L1</td><td>✅</td><td>⚠️</td><td>α</td></tr>
+                    <tr><td><b>ElasticNet</b></td><td>L1+L2</td><td>✅</td><td>✅</td><td>α, ρ</td></tr>
+                </tbody>
+            </table>
+
+            <div class="split">
+                <div class="card">
+                    <h4>📊 Ridge</h4>
+                    <p>Когда <b>все признаки полезны</b>, но есть мультиколлинеарность.</p>
+                </div>
+                <div class="card">
+                    <h4>🎯 Lasso</h4>
+                    <p>Когда нужно <b>уменьшить число признаков</b>.</p>
+                </div>
+            </div>
+            <div class="card">
+                <h4>🔀 ElasticNet</h4>
+                <p>Когда <b>много коррелированных</b> признаков — золотая середина.</p>
+            </div>
+
+            <div class="box success" style="margin-top:10px;">
+                💡 <b>Выбор α:</b> чем больше α — тем сильнее штраф. При α → 0 получаем OLS. При α → ∞ все веса → 0.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- PART 4 -->
+<!-- ============================================================= -->
+<div class="part">
+    <div class="part-header">
+        <span class="part-number">ЧАСТЬ 4</span>
+        <h1 class="part-title">Предобработка данных</h1>
+    </div>
+
+    <h2>Типы пропусков по механизму</h2>
+    <table>
+        <thead>
+            <tr><th>Тип</th><th>Аббревиатура</th><th>Описание</th><th>Пример в House Prices</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><b>Полностью случайные</b></td><td>MCAR</td><td>Пропуск не зависит ни от чего</td><td>Редкий случай</td></tr>
+            <tr><td><b>Случайные</b></td><td>MAR</td><td>Пропуск зависит от других признаков</td><td>LotFrontage зависит от Neighborhood</td></tr>
+            <tr><td><b>Неслучайные</b></td><td>MNAR</td><td>Пропуск зависит от самого значения</td><td>PoolQC = NaN, потому что нет бассейна</td></tr>
+        </tbody>
+    </table>
+
+    <div class="box info">
+        🎯 <b>Ключевая идея:</b> стратегия обработки зависит от <b>типа пропуска</b>, а не только от процента!
+    </div>
+
+    <h2>Стратегии обработки пропусков</h2>
+    <table>
+        <thead>
+            <tr><th>Стратегия</th><th>Когда применять</th><th>Плюсы</th><th>Минусы</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>🗑️ Удаление строк</td><td>&lt; 5% пропусков</td><td>Простота</td><td>Потеря данных</td></tr>
+            <tr><td>❌ Удаление столбца</td><td>&gt; 50% пропусков</td><td>Простота</td><td>Потеря признака</td></tr>
+            <tr><td>📊 Среднее</td><td>Нормальное распр.</td><td>Простота</td><td>Искажает распределение</td></tr>
+            <tr><td>📈 Медиана</td><td>Числовые, выбросы</td><td>Устойчива к выбросам</td><td>Не учитывает группы</td></tr>
+            <tr><td>🎯 Мода</td><td>Категориальные</td><td>Простота</td><td>Перекос</td></tr>
+            <tr><td>👥 Групповая медиана</td><td>Связь с признаками</td><td>Точнее</td><td>Сложнее</td></tr>
+            <tr><td>🤖 KNN-импутация</td><td>Сложные зависимости</td><td>Учитывает похожих</td><td>Дорого</td></tr>
+            <tr><td>🆕 "None" / 0</td><td>Смысловые пропуски</td><td>Сохраняет информацию</td><td>Только для MNAR</td></tr>
+        </tbody>
+    </table>
+
+    <div class="box success">
+        💡 <b>Для House Prices:</b> 19 столбцов с пропусками → используем <b>3 стратегии</b> в зависимости от типа.
+    </div>
+
+    <h2>Обработка выбросов</h2>
+    <div class="split">
+        <div class="card">
+            <h4>🔢 Метод IQR</h4>
+            <div class="formula" style="font-size:11pt; padding:8px;">IQR = Q₃ − Q₁</div>
+            <p><b>Границы:</b></p>
+            <ul>
+                <li>Нижняя: Q₁ − 1.5·IQR</li>
+                <li>Верхняя: Q₃ + 1.5·IQR</li>
+            </ul>
+            <p style="font-size:9pt; color:#666;">Не требует нормальности, устойчив к выбросам.</p>
+        </div>
+        <div class="card">
+            <h4>📊 Z-score</h4>
+            <div class="formula" style="font-size:11pt; padding:8px;">z = (x − μ) / σ</div>
+            <p><b>Правило:</b> |z| &gt; 3 → выброс.</p>
+            <p style="font-size:9pt; color:#666;">Предполагает нормальность. Плохо работает на скошенных данных.</p>
+        </div>
+        <div class="card">
+            <h4>🔧 Модифицированный Z-score</h4>
+            <div class="formula" style="font-size:11pt; padding:8px;">M = 0.6745 · (x − median) / MAD</div>
+            <p>Использует медиану и MAD вместо среднего и std. Устойчив к выбросам.</p>
+        </div>
+        <div class="card success">
+            <h4>🎯 В House Prices</h4>
+            <p>Известные выбросы по документации Kaggle:</p>
+            <ul>
+                <li>GrLivArea &gt; 4000 кв. футов</li>
+                <li>SalePrice &lt; $300 000</li>
+            </ul>
+            <p>Удаляем только из <b>train</b>!</p>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- PART 4 CONTINUED -->
+<!-- ============================================================= -->
+<div class="part">
+    <h1 class="part-title">Предобработка (продолжение)</h1>
+
+    <h2>Логарифмирование скошенной целевой</h2>
+    <div class="split">
+        <div class="card danger">
+            <h4>⚠️ Проблема скошенности</h4>
+            <p><code>SalePrice</code> имеет <b>правую асимметрию</b> (skew ≈ 1.88):</p>
+            <ul>
+                <li>Большинство домов дешёвые</li>
+                <li>Несколько домов очень дорогие</li>
+                <li>Распределение далеко от нормального</li>
+            </ul>
+            <p>Последствия: гетероскедастичность, большое влияние выбросов.</p>
+        </div>
+        <div class="card success">
+            <h4>✅ Решение: log1p</h4>
+            <div class="formula" style="font-size:11pt; padding:8px;">y' = log(1 + y)</div>
+            <p><b>Обратное:</b></p>
+            <div class="formula" style="font-size:11pt; padding:8px;">y = exp(y') − 1</div>
+            <p>skew после: ≈ 0.12 — почти нормальное!</p>
+        </div>
+    </div>
+
+    <div class="box warn">
+        ⚠️ <b>Важно:</b> после логарифмирования метрики (RMSE) считаются <b>в лог-пространстве</b>. Для реального RMSE в долларах используйте <code>np.expm1(predictions)</code>.
+    </div>
+
+    <h2>Кодирование категориальных признаков</h2>
+    <table>
+        <thead>
+            <tr><th>Метод</th><th>Когда применять</th><th>Плюсы</th><th>Минусы</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><b>Label Encoding</b></td>
+                <td>Порядковые (ExterQual, BsmtQual)</td>
+                <td>Простота, сохраняет порядок</td>
+                <td>Ложный порядок для номинальных</td>
+            </tr>
+            <tr>
+                <td><b>One-Hot Encoding</b></td>
+                <td>Номинальные с малым числом категорий (MSZoning)</td>
+                <td>Нет ложного порядка</td>
+                <td>Взрыв размерности</td>
+            </tr>
+            <tr>
+                <td><b>Target Encoding</b></td>
+                <td>Номинальные с 20+ категорий (Neighborhood)</td>
+                <td>Компактность, учитывает целевую</td>
+                <td>Риск утечки данных</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Масштабирование признаков</h2>
+    <div class="split">
+        <div class="card">
+            <h4>📊 StandardScaler</h4>
+            <div class="formula" style="font-size:11pt; padding:8px;">z = (x − μ) / σ</div>
+            <p>mean = 0, std = 1</p>
+            <p style="font-size:9pt;">Для LR, Ridge, Lasso, SVM.</p>
+        </div>
+        <div class="card">
+            <h4>📐 MinMaxScaler</h4>
+            <div class="formula" style="font-size:11pt; padding:8px;">z = (x − min) / (max − min)</div>
+            <p>Диапазон [0, 1]</p>
+            <p style="font-size:9pt;">Для нейросетей.</p>
+        </div>
+        <div class="card">
+            <h4>💪 RobustScaler</h4>
+            <div class="formula" style="font-size:11pt; padding:8px;">z = (x − median) / IQR</div>
+            <p>Устойчив к выбросам</p>
+            <p style="font-size:9pt;">Для «грязных» данных.</p>
+        </div>
+        <div class="card danger">
+            <h4>🚨 Критично</h4>
+            <p><code>fit_transform()</code> только на <b>train</b>! На test — только <code>transform()</code>. Иначе — <b>утечка данных</b>.</p>
+        </div>
+    </div>
+
+    <h2>Feature Engineering</h2>
+    <div class="split">
+        <div class="card">
+            <h4>🔢 Агрегации</h4>
+            <ul>
+                <li><b>TotalSF</b> = TotalBsmtSF + 1stFlrSF + 2ndFlrSF</li>
+                <li><b>TotalBath</b> = FullBath + 0.5·HalfBath + BsmtFullBath + 0.5·BsmtHalfBath</li>
+                <li><b>TotalPorch</b> = OpenPorchSF + EnclosedPorch + 3SsnPorch + ScreenPorch + WoodDeckSF</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>📅 Возрастные</h4>
+            <ul>
+                <li><b>HouseAge</b> = YrSold − YearBuilt</li>
+                <li><b>RemodAge</b> = YrSold − YearRemodAdd</li>
+                <li><b>IsRemodeled</b> = 1 если была реконструкция</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>🎯 Бинарные</h4>
+            <ul>
+                <li><b>HasPool</b> = PoolArea &gt; 0</li>
+                <li><b>HasGarage</b> = GarageArea &gt; 0</li>
+                <li><b>Has2ndFloor</b> = 2ndFlrSF &gt; 0</li>
+                <li><b>HasFireplace</b> = Fireplaces &gt; 0</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>🔀 Взаимодействия</h4>
+            <ul>
+                <li><b>OverallQual_TotalSF</b> = OverallQual × TotalSF</li>
+                <li><b>Qual_Age</b> = OverallQual / (HouseAge + 1)</li>
+                <li><b>OverallScore</b> = композитный индекс качества</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- PART 5 -->
+<!-- ============================================================= -->
+<div class="part">
+    <div class="part-header">
+        <span class="part-number">ЧАСТЬ 5</span>
+        <h1 class="part-title">Метрики и валидация</h1>
+    </div>
+
+    <h2>Метрики регрессии</h2>
+    <div class="split">
+        <div class="card">
+            <h4>📉 MSE — Mean Squared Error</h4>
+            <div class="formula" style="font-size:11pt; padding:8px;">MSE = (1/n)·Σ(yᵢ − ŷᵢ)²</div>
+            <p style="font-size:9pt;">Штрафует большие ошибки сильнее. Чувствителен к выбросам.</p>
+        </div>
+        <div class="card">
+            <h4>📈 RMSE</h4>
+            <div class="formula" style="font-size:11pt; padding:8px;">RMSE = √MSE</div>
+            <p style="font-size:9pt;">В единицах целевой (долларах). Чувствителен к выбросам.</p>
+        </div>
+        <div class="card">
+            <h4>📊 MAE</h4>
+            <div class="formula" style="font-size:11pt; padding:8px;">MAE = (1/n)·Σ|yᵢ − ŷᵢ|</div>
+            <p style="font-size:9pt;">Устойчива к выбросам. Соответствует медианной ошибке.</p>
+        </div>
+        <div class="card">
+            <h4>🎯 R²</h4>
+            <div class="formula" style="font-size:11pt; padding:8px;">R² = 1 − SS_res / SS_tot</div>
+            <p style="font-size:9pt;">Доля объяснённой дисперсии. 0..1 (может быть &lt; 0).</p>
+        </div>
+    </div>
+
+    <h2>Кросс-валидация (K-Fold)</h2>
+    <div class="split">
+        <div class="card danger">
+            <h4>⚠️ Проблема одного split</h4>
+            <ul>
+                <li>Оценка зависит от случайности</li>
+                <li>Маленький датасет → нестабильные метрики</li>
+                <li>Нет информации о разбросе качества</li>
+            </ul>
+        </div>
+        <div class="card success">
+            <h4>✅ Решение: K-Fold</h4>
+            <ol>
+                <li>Разбить данные на K фолдов</li>
+                <li>Обучить K раз (каждый фолд побывает в test)</li>
+                <li>Усреднить метрики</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="metric-grid">
+        <div class="metric"><div class="metric-value">5</div><div class="metric-label">Стандарт</div></div>
+        <div class="metric"><div class="metric-value">10</div><div class="metric-label">Для больших данных</div></div>
+        <div class="metric"><div class="metric-value">LOO</div><div class="metric-label">Leave-One-Out</div></div>
+        <div class="metric"><div class="metric-value">CV</div><div class="metric-label">Усреднение</div></div>
+    </div>
+
+    <pre><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> cross_val_score, KFold
+
+kf = KFold(n_splits=<span class="num">5</span>, shuffle=<span class="kw">True</span>, random_state=<span class="num">42</span>)
+scores = cross_val_score(ridge, X_train_scaled, y_train,
+                          cv=kf, scoring=<span class="str">'neg_root_mean_squared_error'</span>)
+
+<span class="fn">print</span>(<span class="str">f"RMSE по фолдам: {-scores}"</span>)
+<span class="fn">print</span>(<span class="str">f"Среднее: {-scores.mean():.4f} ± {scores.std():.4f}"</span>)</pre>
+
+    <h2>Подбор гиперпараметров (GridSearchCV)</h2>
+    <div class="split">
+        <div class="card">
+            <h4>📋 GridSearchCV</h4>
+            <p>Перебор <b>всех комбинаций</b> из сетки параметров.</p>
+            <p style="font-size:9pt;">➕ Надёжно · ➖ Медленно</p>
+        </div>
+        <div class="card">
+            <h4>🎲 RandomizedSearchCV</h4>
+            <p>Случайные N комбинаций из распределений.</p>
+            <p style="font-size:9pt;">➕ Быстро · ➖ Может пропустить оптимум</p>
+        </div>
+    </div>
+
+    <pre><span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> GridSearchCV
+
+<span class="cmt"># Сетка значений alpha для Ridge</span>
+ridge_params = {<span class="str">'alpha'</span>: [<span class="num">0.001</span>, <span class="num">0.01</span>, <span class="num">0.1</span>, <span class="num">1.0</span>, <span class="num">10.0</span>, <span class="num">100.0</span>]}
+
+ridge_grid = GridSearchCV(
+    Ridge(random_state=<span class="num">42</span>),
+    ridge_params,
+    cv=kf,
+    scoring=<span class="str">'neg_root_mean_squared_error'</span>,
+    n_jobs=-<span class="num">1</span>  <span class="cmt"># все CPU</span>
+)
+ridge_grid.fit(X_train_scaled, y_train)
+
+<span class="fn">print</span>(<span class="str">f"Best alpha: {ridge_grid.best_params_['alpha']}"</span>)
+<span class="fn">print</span>(<span class="str">f"Best RMSE: {-ridge_grid.best_score_:.4f}"</span>)</pre>
+</div>
+
+<!-- ============================================================= -->
+<!-- PART 5 CONTINUED -->
+<!-- ============================================================= -->
+<div class="part">
+    <h1 class="part-title">Диагностика и интерпретация</h1>
+
+    <h2>Утечка данных (Data Leakage)</h2>
+    <div class="box danger">
+        🚨 <b>Утечка данных</b> — ситуация, когда информация из test «просачивается» в train через preprocessing. Модель показывает <b>нереально высокие метрики</b>, но в продакшене «падает».
+    </div>
+
+    <div class="split">
+        <div class="card danger">
+            <h4>❌ Типичные ошибки</h4>
+            <ul>
+                <li><code>scaler.fit_transform(X_all)</code> до split</li>
+                <li>Вычисление медианы на всём датасете</li>
+                <li>Target Encoding до split</li>
+                <li>Feature selection по всем данным</li>
+                <li>Удаление выбросов из test</li>
+            </ul>
+        </div>
+        <div class="card success">
+            <h4>✅ Правильно</h4>
+            <ul>
+                <li>Сначала <code>train_test_split</code></li>
+                <li><code>fit</code> только на train</li>
+                <li><code>transform</code> на test с train-параметрами</li>
+                <li>Использовать <code>Pipeline</code></li>
+                <li>Target Encoding внутри CV</li>
+            </ul>
+        </div>
+    </div>
+
+    <pre><span class="cmt"># ❌ НЕПРАВИЛЬНО — утечка!</span>
+scaler = StandardScaler()
+X_all_scaled = scaler.fit_transform(X_all)  <span class="cmt"># fit на всех данных!</span>
+X_train, X_test, y_train, y_test = train_test_split(X_all_scaled, y)
+
+<span class="cmt"># ✅ ПРАВИЛЬНО</span>
+X_train, X_test, y_train, y_test = train_test_split(X, y)
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)  <span class="cmt"># только train!</span>
+X_test_scaled = scaler.transform(X_test)         <span class="cmt"># transform на test</span></pre>
+
+    <h2>Анализ остатков</h2>
+    <div class="box info">
+        <b>Остатки:</b> eᵢ = yᵢ − ŷᵢ. Их анализ показывает, <b>адекватна ли модель</b>.
+    </div>
+
+    <div class="split">
+        <div class="card">
+            <h4>📊 Что проверять</h4>
+            <ol>
+                <li><b>Среднее ≈ 0</b> — нет систематической ошибки</li>
+                <li><b>Нормальность</b> — QQ-plot</li>
+                <li><b>Гомоскедастичность</b> — разброс постоянный</li>
+                <li><b>Отсутствие автокорреляции</b> — Durbin-Watson</li>
+            </ol>
+        </div>
+        <div class="card">
+            <h4>🎭 Паттерны остатков</h4>
+            <table style="font-size:9pt;">
+                <thead><tr><th>Паттерн</th><th>Проблема</th></tr></thead>
+                <tbody>
+                    <tr><td>Случайный разброс</td><td>✅ Хорошо</td></tr>
+                    <tr><td>Веер</td><td>Гетероскедастичность</td></tr>
+                    <tr><td>U-образный</td><td>Нелинейность</td></tr>
+                    <tr><td>Тренд</td><td>Смещение</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <h2>Переобучение и недообучение</h2>
+    <div class="split">
+        <div class="card warn">
+            <h4>📉 Underfitting</h4>
+            <p><b>Train error: высокий</b><br><b>Test error: высокий</b></p>
+            <p>Модель слишком простая.</p>
+            <p style="font-size:9pt;">Решение: усложнить модель, больше признаков, меньше регуляризации.</p>
+        </div>
+        <div class="card success">
+            <h4>✅ Optimum</h4>
+            <p><b>Train error: низкий</b><br><b>Test error: низкий</b></p>
+            <p>Модель обобщает.</p>
+            <p style="font-size:9pt;">Кросс-валидация даёт стабильные метрики.</p>
+        </div>
+        <div class="card danger">
+            <h4>📈 Overfitting</h4>
+            <p><b>Train error: очень низкий</b><br><b>Test error: высокий</b></p>
+            <p>Модель запомнила шум.</p>
+            <p style="font-size:9pt;">Решение: регуляризация, больше данных, упрощение.</p>
+        </div>
+    </div>
+
+    <h2>Важность признаков</h2>
+    <div class="split">
+        <div class="card">
+            <h4>📊 Коэффициенты линейных моделей</h4>
+            <p><code>model.coef_[0]</code> — веса признаков.</p>
+            <ul>
+                <li>Положительный → повышает предсказание</li>
+                <li>Отрицательный → понижает</li>
+            </ul>
+            <p style="font-size:9pt;">⚠️ Работает только после масштабирования!</p>
+        </div>
+        <div class="card">
+            <h4>🎯 Lasso обнуляет</h4>
+            <p>Lasso <b>автоматически</b> удаляет неинформативные признаки.</p>
+            <p>Если Lasso обнулил N признаков — они <b>не влияют</b> на целевую.</p>
+            <p style="font-size:9pt;">➡️ Это <b>встроенный отбор признаков</b>.</p>
+        </div>
+    </div>
+
+    <pre><span class="cmt"># Коэффициенты Ridge</span>
+coef_df = pd.DataFrame({
+    <span class="str">'Feature'</span>: feature_cols,
+    <span class="str">'Coefficient'</span>: ridge_model.coef_
+}).sort_values(<span class="str">'Coefficient'</span>, ascending=<span class="kw">False</span>)
+
+<span class="cmt"># Визуализация ТОП-30</span>
+top_features = pd.concat([coef_df.head(<span class="num">15</span>), coef_df.tail(<span class="num">15</span>)])
+colors = [<span class="str">'#2ecc71'</span> <span class="kw">if</span> c &gt; <span class="num">0</span> <span class="kw">else</span> <span class="str">'#e74c3c'</span> <span class="kw">for</span> c <span class="kw">in</span> top_features[<span class="str">'Coefficient'</span>]]
+plt.barh(top_features[<span class="str">'Feature'</span>], top_features[<span class="str">'Coefficient'</span>], color=colors)
+plt.show()
+
+<span class="cmt"># Сколько признаков обнулил Lasso?</span>
+n_zero = (lasso_model.coef_ == <span class="num">0</span>).<span class="fn">sum</span>()
+<span class="fn">print</span>(<span class="str">f"Lasso обнулил: {n_zero} из {len(lasso_model.coef_)}"</span>)</pre>
+</div>
+
+<!-- ============================================================= -->
+<!-- PART 6 -->
+<!-- ============================================================= -->
+<div class="part">
+    <div class="part-header">
+        <span class="part-number">ЧАСТЬ 6</span>
+        <h1 class="part-title">Практика и выводы</h1>
+    </div>
+
+    <h2>Полный пайплайн регрессии</h2>
+    <div class="pipeline">
+        <div class="pipeline-row"><div class="pipeline-num">1</div><div class="pipeline-text"><strong>Загрузка данных:</strong> train.csv (1460×81), test.csv (1459×80)</div></div>
+        <div class="pipeline-row"><div class="pipeline-num">2</div><div class="pipeline-text"><strong>EDA:</strong> распределения, корреляции, пропуски, выбросы</div></div>
+        <div class="pipeline-row"><div class="pipeline-num">3</div><div class="pipeline-text"><strong>Обработка пропусков:</strong> смысловые → "None"/0, случайные → медиана по группам</div></div>
+        <div class="pipeline-row"><div class="pipeline-num">4</div><div class="pipeline-text"><strong>Обработка выбросов:</strong> IQR + доменные знания (GrLivArea &lt; 4000)</div></div>
+        <div class="pipeline-row"><div class="pipeline-num">5</div><div class="pipeline-text"><strong>Логарифмирование:</strong> SalePrice_log = np.log1p(SalePrice)</div></div>
+        <div class="pipeline-row"><div class="pipeline-num">6</div><div class="pipeline-text"><strong>Feature Engineering:</strong> TotalSF, TotalBath, HouseAge, HasPool</div></div>
+        <div class="pipeline-row"><div class="pipeline-num">7</div><div class="pipeline-text"><strong>Кодирование:</strong> порядковые → Label, номинальные → One-Hot</div></div>
+        <div class="pipeline-row"><div class="pipeline-num">8</div><div class="pipeline-text"><strong>Разделение:</strong> train_test_split (80/20)</div></div>
+        <div class="pipeline-row"><div class="pipeline-num">9</div><div class="pipeline-text"><strong>Масштабирование:</strong> StandardScaler (fit на train)</div></div>
+        <div class="pipeline-row"><div class="pipeline-num">10</div><div class="pipeline-text"><strong>Обучение:</strong> LR, Ridge, Lasso, ElasticNet</div></div>
+        <div class="pipeline-row"><div class="pipeline-num">11</div><div class="pipeline-text"><strong>CV + GridSearchCV:</strong> подбор α и ρ</div></div>
+        <div class="pipeline-row"><div class="pipeline-num">12</div><div class="pipeline-text"><strong>Оценка на test:</strong> RMSE, MAE, R² (в log и в долларах)</div></div>
+        <div class="pipeline-row"><div class="pipeline-num">13</div><div class="pipeline-text"><strong>Интерпретация:</strong> коэффициенты, важность признаков</div></div>
+        <div class="pipeline-row"><div class="pipeline-num">14</div><div class="pipeline-text"><strong>Сохранение:</strong> joblib для модели, JSON для метаданных</div></div>
+    </div>
+
+    <h2>Ключевые формулы</h2>
+    <div class="split">
+        <div class="card">
+            <h4>📈 Модели</h4>
+            <div class="formula" style="font-size:10pt; padding:8px; margin:5px 0;">ŷ = w₀ + w₁x₁ + ... + wₚxₚ</div>
+            <div class="formula" style="font-size:10pt; padding:8px; margin:5px 0;">L<sub>Ridge</sub> = MSE + α·Σwⱼ²</div>
+            <div class="formula" style="font-size:10pt; padding:8px; margin:5px 0;">L<sub>Lasso</sub> = MSE + α·Σ|wⱼ|</div>
+        </div>
+        <div class="card">
+            <h4>📊 Метрики</h4>
+            <div class="formula" style="font-size:10pt; padding:8px; margin:5px 0;">MSE = (1/n)·Σ(yᵢ − ŷᵢ)²</div>
+            <div class="formula" style="font-size:10pt; padding:8px; margin:5px 0;">RMSE = √MSE</div>
+            <div class="formula" style="font-size:10pt; padding:8px; margin:5px 0;">R² = 1 − SS<sub>res</sub>/SS<sub>tot</sub></div>
+        </div>
+        <div class="card">
+            <h4>🛠️ Предобработка</h4>
+            <div class="formula" style="font-size:10pt; padding:8px; margin:5px 0;">z = (x − μ)/σ</div>
+            <div class="formula" style="font-size:10pt; padding:8px; margin:5px 0;">y' = log(1 + y)</div>
+            <div class="formula" style="font-size:10pt; padding:8px; margin:5px 0;">IQR = Q₃ − Q₁</div>
+        </div>
+        <div class="card">
+            <h4>🔄 Кросс-валидация</h4>
+            <div class="formula" style="font-size:10pt; padding:8px; margin:5px 0;">CV<sub>K</sub> = (1/K)·Σ Metricᵢ</div>
+            <div class="formula" style="font-size:10pt; padding:8px; margin:5px 0;">σ = √[(1/(K-1))·Σ(Metricᵢ − CV<sub>K</sub>)²]</div>
+        </div>
+    </div>
+
+    <h2>Когда какую модель использовать</h2>
+    <div class="split">
+        <div class="card">
+            <h4>📊 Ridge</h4>
+            <ul>
+                <li>Все признаки <b>полезны</b></li>
+                <li>Есть <b>мультиколлинеарность</b></li>
+                <li>Нужна <b>стабильность</b></li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>🎯 Lasso</h4>
+            <ul>
+                <li>Нужен <b>отбор признаков</b></li>
+                <li>Много «шумных» признаков</li>
+                <li>Хотим <b>интерпретируемость</b></li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>🔀 ElasticNet</h4>
+            <ul>
+                <li>Признаки <b>коррелированы</b></li>
+                <li>Хотим лучшее из L1 и L2</li>
+                <li>Lasso нестабилен</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>📉 OLS</h4>
+            <ul>
+                <li>Признаков <b>мало</b> (p &lt;&lt; n)</li>
+                <li>Нет мультиколлинеарности</li>
+                <li>Данные «чистые»</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- PART 6 CONTINUED -->
+<!-- ============================================================= -->
+<div class="part">
+    <h1 class="part-title">Результаты и ошибки</h1>
+
+    <h2>Ожидаемые результаты на House Prices</h2>
+    <table>
+        <thead>
+            <tr><th>Модель</th><th>RMSE (log)</th><th>MAE (log)</th><th>R²</th><th>RMSE ($)</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Linear Regression (OLS)</td><td>~0.135</td><td>~0.095</td><td>~0.88</td><td>~$28 000</td></tr>
+            <tr><td>Ridge (α≈1)</td><td>~0.128</td><td>~0.090</td><td>~0.90</td><td>~$26 000</td></tr>
+            <tr><td>Lasso (α≈0.0005)</td><td>~0.125</td><td>~0.088</td><td>~0.91</td><td>~$25 000</td></tr>
+            <tr><td>ElasticNet</td><td>~0.126</td><td>~0.089</td><td>~0.91</td><td>~$25 500</td></tr>
+        </tbody>
+    </table>
+
+    <div class="split">
+        <div class="card success">
+            <h4>✅ Что важно</h4>
+            <ul>
+                <li><b>Ridge/Lasso/ElasticNet</b> обгоняют OLS</li>
+                <li>Разница 5–10% по RMSE</li>
+                <li>Lasso выбирает ~50 признаков из 200+</li>
+                <li>Все обучаются <b>за секунды</b></li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>🎯 Что улучшит результат</h4>
+            <ul>
+                <li><b>XGBoost/LightGBM</b> — +3-5% к R²</li>
+                <li><b>Stacking</b> — ансамбль моделей</li>
+                <li><b>Optuna</b> для гиперпараметров</li>
+                <li><b>RFE</b> для отбора признаков</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2>Частые ошибки в регрессии</h2>
+    <div class="pipeline">
+        <div class="pipeline-row" style="border-color:#ff4757; background:#fef2f2;">
+            <div class="pipeline-num" style="background:#dc2626;">1</div>
+            <div class="pipeline-text"><strong>❌ fit_transform() на всём датасете до split</strong> → утечка данных</div>
+        </div>
+        <div class="pipeline-row" style="border-color:#ff4757; background:#fef2f2;">
+            <div class="pipeline-num" style="background:#dc2626;">2</div>
+            <div class="pipeline-text"><strong>❌ Обучение на скошенной целевой без log1p</strong> → плохой R²</div>
+        </div>
+        <div class="pipeline-row" style="border-color:#ff4757; background:#fef2f2;">
+            <div class="pipeline-num" style="background:#dc2626;">3</div>
+            <div class="pipeline-text"><strong>❌ Игнор мультиколлинеарности</strong> → нестабильные веса</div>
+        </div>
+        <div class="pipeline-row" style="border-color:#ff4757; background:#fef2f2;">
+            <div class="pipeline-num" style="background:#dc2626;">4</div>
+            <div class="pipeline-text"><strong>❌ Удаление выбросов из test</strong> → утечка + потеря данных</div>
+        </div>
+        <div class="pipeline-row" style="border-color:#ff4757; background:#fef2f2;">
+            <div class="pipeline-num" style="background:#dc2626;">5</div>
+            <div class="pipeline-text"><strong>❌ RMSE в log-пространстве как «реальный» RMSE</strong></div>
+        </div>
+        <div class="pipeline-row" style="border-color:#ff4757; background:#fef2f2;">
+            <div class="pipeline-num" style="background:#dc2626;">6</div>
+            <div class="pipeline-text"><strong>❌ Сравнение моделей по метрике на train</strong> → переобученная «победит»</div>
+        </div>
+        <div class="pipeline-row" style="border-color:#ff4757; background:#fef2f2;">
+            <div class="pipeline-num" style="background:#dc2626;">7</div>
+            <div class="pipeline-text"><strong>❌ Игнор остатков</strong> → не замечаем проблему модели</div>
+        </div>
+        <div class="pipeline-row" style="border-color:#ff4757; background:#fef2f2;">
+            <div class="pipeline-num" style="background:#dc2626;">8</div>
+            <div class="pipeline-text"><strong>❌ Забыли про стратификацию распределения целевой</strong></div>
+        </div>
+    </div>
+
+    <h2>Чек-лист регрессионного проекта</h2>
+    <div class="split">
+        <div class="card">
+            <h4>📋 Подготовка данных</h4>
+            <ul>
+                <li>☑️ Проверил распределение целевой (skew?)</li>
+                <li>☑️ Обработал пропуски по типам</li>
+                <li>☑️ Удалил выбросы из train (IQR/домен)</li>
+                <li>☑️ Логарифмировал скошенную целевую</li>
+                <li>☑️ Создал новые признаки</li>
+                <li>☑️ Закодировал категории правильно</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>🎓 Моделирование</h4>
+            <ul>
+                <li>☑️ Разделил train/test ДО масштабирования</li>
+                <li>☑️ fit только на train</li>
+                <li>☑️ Обучил baseline (OLS)</li>
+                <li>☑️ Сравнил Ridge/Lasso/ElasticNet</li>
+                <li>☑️ Провёл кросс-валидацию</li>
+                <li>☑️ Подобрал гиперпараметры</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>📊 Оценка</h4>
+            <ul>
+                <li>☑️ Посчитал RMSE, MAE, R²</li>
+                <li>☑️ Проанализировал остатки</li>
+                <li>☑️ Построил график предсказаний</li>
+                <li>☑️ Сравнил модель с baseline</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>📦 Деплой</h4>
+            <ul>
+                <li>☑️ Интерпретировал коэффициенты</li>
+                <li>☑️ Создал функцию предсказания</li>
+                <li>☑️ Сохранил модель (joblib)</li>
+                <li>☑️ Сохранил метаданные (JSON)</li>
+                <li>☑️ Проверил загрузку из репозитория</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================= -->
+<!-- PART 6 FINAL -->
+<!-- ============================================================= -->
+<div class="part">
+    <h1 class="part-title">Ключевые выводы и источники</h1>
+
+    <h2>Топ-10 правил регрессии</h2>
+    <ol style="font-size:11pt; line-height:1.7;">
+        <li><b>Регрессия</b> — предсказание непрерывной величины. <b>Классификация</b> — дискретной.</li>
+        <li><b>OLS</b> минимизирует MSE. Решение: ŵ = (XᵀX)⁻¹Xᵀy.</li>
+        <li><b>Ridge (L2)</b> уменьшает веса, <b>Lasso (L1)</b> обнуляет их — отбор признаков.</li>
+        <li><b>ElasticNet</b> — компромисс между Ridge и Lasso.</li>
+        <li><b>Логарифмирование</b> скошенной целевой улучшает нормальность и гомоскедастичность.</li>
+        <li><b>Пропуски</b> бывают смысловыми (→"None") и случайными (→ медиана).</li>
+        <li><b>Выбросы</b> удаляются методом IQR или Z-score. Только из train!</li>
+        <li><b>Кросс-валидация</b> даёт устойчивую оценку. <b>GridSearchCV</b> — оптимальные гиперпараметры.</li>
+        <li><b>fit_transform</b> только на train. <b>transform</b> на test.</li>
+        <li><b>R²</b> — доля объяснённой дисперсии. <b>RMSE</b> — средняя ошибка в единицах целевой.</li>
+    </ol>
+
+    <h2>Что дальше</h2>
+    <div class="split">
+        <div class="card">
+            <h4>📘 Модуль 2</h4>
+            <ul>
+                <li>🔷 SVM для классификации (Heart Disease)</li>
+                <li>📊 Сравнение LR и SVM</li>
+                <li>🎯 Метрики классификации</li>
+                <li>⚖️ Дисбаланс классов</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>📗 Модуль 3 — Ансамбли</h4>
+            <ul>
+                <li>🌳 Random Forest</li>
+                <li>🚀 XGBoost, LightGBM, CatBoost</li>
+                <li>🎛️ Optuna для гиперпараметров</li>
+                <li>🔍 SHAP для интерпретации</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>📙 Модуль 4 — Признаки</h4>
+            <ul>
+                <li>🗺️ Геоданные</li>
+                <li>📝 Тексты (TF-IDF)</li>
+                <li>📅 Временные ряды как признаки</li>
+            </ul>
+        </div>
+        <div class="card">
+            <h4>📕 Модуль 5 — Временные ряды</h4>
+            <ul>
+                <li>📉 STL-декомпозиция</li>
+                <li>🔄 SARIMA, ARIMAX</li>
+                <li>📈 Multi-step forecasting</li>
+            </ul>
+        </div>
+    </div>
+
+    <h2>Источники</h2>
+    <ol>
+        <li>Géron, A. (2022). <em>Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow</em> (3rd ed.). O'Reilly Media.</li>
+        <li>McKinney, W. (2022). <em>Python for Data Analysis</em> (3rd ed.). O'Reilly Media.</li>
+        <li>Kaggle. House Prices — Advanced Regression Techniques. https://www.kaggle.com/c/house-prices-advanced-regression-techniques</li>
+        <li>Scikit-learn Documentation. https://scikit-learn.org/stable/</li>
+        <li>James, G., Witten, D., Hastie, T., & Tibshirani, R. (2021). <em>An Introduction to Statistical Learning</em> (2nd ed.). Springer.</li>
+        <li>Hastie, T., Tibshirani, R., & Friedman, J. (2009). <em>The Elements of Statistical Learning</em> (2nd ed.). Springer.</li>
+    </ol>
+
+    <div class="footer-note">
+        Конспект теории «Регрессия на примере House Prices» · A4 Landscape · Группа ПКТб-23-1 · 2025/2026<br>
+        Тюменский индустриальный университет · IT-направление<br>
+        Для сохранения в PDF: нажмите «🖨️ Сохранить в PDF» и выберите «Save as PDF»
+    </div>
+</div>
+
+<script>
+if (window.location.hash === '#print') {
+    window.addEventListener('load', () => setTimeout(() => window.print(), 500));
+}
+</script>
+
+</body>
+</html>

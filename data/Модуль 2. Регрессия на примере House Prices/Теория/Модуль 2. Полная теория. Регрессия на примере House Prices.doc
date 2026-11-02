@@ -1,0 +1,1119 @@
+﻿
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>Converted from Markdown</title>
+        <!--[if gte mso 9]>
+        <xml>
+          <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>90</w:Zoom>
+            <w:DoNotPromptForConvert/>
+            <w:DoNotShowInsertAsIcon/>
+          </w:WordDocument>
+        </xml>
+        <![endif]-->
+        <style>
+          @page {
+            size: A4;
+            margin: 2.54cm;
+          }
+          body { 
+            font-family: 'Times New Roman', serif; 
+            font-size: 12pt;
+            line-height: 1.5; 
+            margin: 0;
+            padding: 0;
+            color: #000;
+          }
+          h1 { font-size: 18pt; font-weight: bold; margin: 12pt 0 6pt 0; }
+          h2 { font-size: 16pt; font-weight: bold; margin: 12pt 0 6pt 0; }
+          h3 { font-size: 14pt; font-weight: bold; margin: 12pt 0 6pt 0; }
+          p { margin: 6pt 0; }
+          code { 
+            font-family: 'Courier New', monospace;
+            background-color: #f5f5f5;
+            padding: 2pt;
+            border: 1pt solid #ddd;
+          }
+          pre { 
+            font-family: 'Courier New', monospace;
+            background-color: #f5f5f5;
+            padding: 6pt;
+            border: 1pt solid #ddd;
+            margin: 6pt 0;
+            white-space: pre-wrap;
+          }
+          blockquote { 
+            border-left: 3pt solid #ccc;
+            margin: 6pt 0;
+            padding-left: 12pt;
+            font-style: italic;
+          }
+          table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 6pt 0;
+          }
+          th, td {
+            border: 1pt solid #000;
+            padding: 3pt 6pt;
+            text-align: left;
+          }
+          th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+          }
+          ul, ol {
+            margin: 6pt 0;
+            padding-left: 24pt;
+          }
+          li {
+            margin: 3pt 0;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>📚 Полная теория: Регрессия на примере House Prices</h1>
+<h2>Уровень детализации: 100/10</h2>
+<hr>
+<h1>Часть 1. Введение в регрессионный анализ</h1>
+<h2>1.1. Что такое регрессия?</h2>
+<p><strong>Регрессия</strong> — это класс задач машинного обучения с учителем, в которых целевая переменная является <strong>непрерывной величиной</strong>. Модель учится предсказывать число, а не метку класса.</p>
+<p><strong>Ключевое отличие от классификации:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Аспект</th>
+<th>Регрессия</th>
+<th>Классификация</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Целевая переменная</td>
+<td>Непрерывная (цена, температура, рост)</td>
+<td>Дискретная (класс, метка)</td>
+</tr>
+<tr>
+<td>Пример</td>
+<td>SalePrice = $250,000</td>
+<td>Survived = 0 или 1</td>
+</tr>
+<tr>
+<td>Метрики</td>
+<td>RMSE, MAE, R²</td>
+<td>Accuracy, Precision, Recall, F1</td>
+</tr>
+<tr>
+<td>Выход модели</td>
+<td>Число из диапазона</td>
+<td>Вероятность класса</td>
+</tr>
+</tbody></table>
+<p><strong>Математическая постановка:</strong></p>
+<p>Дано:</p>
+<ul>
+<li>Обучающая выборка: $D = {(x_1, y_1), (x_2, y_2), ..., (x_n, y_n)}$</li>
+<li>$x_i \in \mathbb{R}^p$ — вектор признаков (p признаков)</li>
+<li>$y_i \in \mathbb{R}$ — целевая переменная</li>
+</ul>
+<p>Найти:</p>
+<ul>
+<li>Функцию $f: \mathbb{R}^p \to \mathbb{R}$, которая минимизирует ошибку предсказания</li>
+</ul>
+<hr>
+<h2>1.2. Датасет House Prices — Ames Housing Dataset</h2>
+<p><strong>Источник:</strong> Kaggle Competition «House Prices - Advanced Regression Techniques»</p>
+<p><strong>Историческая справка:</strong> Датасет создан <strong>Дином Де Коком (Dean De Cock)</strong> в 2011 году как современная замена устаревшему Boston Housing Dataset. Содержит данные о жилых домах в <strong>Эймсе, штат Айова, США</strong>, проданных в период с 2006 по 2010 год.</p>
+<p><strong>Структура:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Параметр</th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Всего наблюдений</td>
+<td>2919 (1460 train + 1459 test)</td>
+</tr>
+<tr>
+<td>Всего признаков</td>
+<td>79 explanatory variables + Id + SalePrice</td>
+</tr>
+<tr>
+<td>Числовые признаки</td>
+<td>36 (int64, float64)</td>
+</tr>
+<tr>
+<td>Категориальные признаки</td>
+<td>43 (object)</td>
+</tr>
+<tr>
+<td>Целевая переменная</td>
+<td><code>SalePrice</code> — цена продажи в долларах</td>
+</tr>
+</tbody></table>
+<p><strong>Ключевые признаки:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Признак</th>
+<th>Тип</th>
+<th>Описание</th>
+<th>Влияние на цену</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>OverallQual</code></td>
+<td>int (1-10)</td>
+<td>Общее качество материалов и отделки</td>
+<td>⭐⭐⭐⭐⭐ (r ≈ 0.79)</td>
+</tr>
+<tr>
+<td><code>GrLivArea</code></td>
+<td>float</td>
+<td>Жилая площадь над землёй (кв. футы)</td>
+<td>⭐⭐⭐⭐⭐ (r ≈ 0.71)</td>
+</tr>
+<tr>
+<td><code>GarageCars</code></td>
+<td>int (0-4)</td>
+<td>Вместимость гаража (машин)</td>
+<td>⭐⭐⭐⭐ (r ≈ 0.64)</td>
+</tr>
+<tr>
+<td><code>GarageArea</code></td>
+<td>float</td>
+<td>Площадь гаража (кв. футы)</td>
+<td>⭐⭐⭐⭐ (r ≈ 0.62)</td>
+</tr>
+<tr>
+<td><code>TotalBsmtSF</code></td>
+<td>float</td>
+<td>Общая площадь подвала</td>
+<td>⭐⭐⭐⭐ (r ≈ 0.61)</td>
+</tr>
+<tr>
+<td><code>1stFlrSF</code></td>
+<td>float</td>
+<td>Площадь первого этажа</td>
+<td>⭐⭐⭐⭐ (r ≈ 0.61)</td>
+</tr>
+<tr>
+<td><code>YearBuilt</code></td>
+<td>int</td>
+<td>Год постройки</td>
+<td>⭐⭐⭐ (r ≈ 0.52)</td>
+</tr>
+<tr>
+<td><code>FullBath</code></td>
+<td>int</td>
+<td>Полные ванные комнаты</td>
+<td>⭐⭐⭐ (r ≈ 0.56)</td>
+</tr>
+<tr>
+<td><code>TotRmsAbvGrd</code></td>
+<td>int</td>
+<td>Всего комнат над землёй</td>
+<td>⭐⭐⭐ (r ≈ 0.53)</td>
+</tr>
+<tr>
+<td><code>Fireplaces</code></td>
+<td>int</td>
+<td>Количество каминов</td>
+<td>⭐⭐⭐ (r ≈ 0.47)</td>
+</tr>
+<tr>
+<td><code>Neighborhood</code></td>
+<td>категория (25)</td>
+<td>Район в Эймсе</td>
+<td>⭐⭐⭐⭐ (сильное влияние)</td>
+</tr>
+<tr>
+<td><code>ExterQual</code></td>
+<td>порядковый</td>
+<td>Качество внешней отделки</td>
+<td>⭐⭐⭐⭐</td>
+</tr>
+</tbody></table>
+<p><strong>Особенности датасета, делающие его идеальным для обучения:</strong></p>
+<ol>
+<li><strong>Реалистичные пропуски</strong> — не случайные, а семантически осмысленные</li>
+<li><strong>Скошенное распределение целевой</strong> — требует логарифмирования</li>
+<li><strong>Множество категориальных признаков</strong> — 43 из 81 столбца</li>
+<li><strong>Мультиколлинеарность</strong> — GarageCars ↔ GarageArea (r = 0.88)</li>
+<li><strong>Выбросы</strong> — элитные дома и дома с аномально большой площадью</li>
+<li><strong>Риск переобучения</strong> — 79 признаков при 1460 наблюдениях</li>
+</ol>
+<hr>
+<h1>Часть 2. Метод наименьших квадратов (OLS)</h1>
+<h2>2.1. Линейная регрессия</h2>
+<p><strong>Модель линейной регрессии</strong> предполагает, что целевая переменная линейно зависит от признаков:</p>
+<p>$$\hat{y} = w_0 + w_1 x_1 + w_2 x_2 + ... + w_p x_p$$</p>
+<p>где:</p>
+<ul>
+<li>$w_0$ — смещение (bias, intercept)</li>
+<li>$w_1, ..., w_p$ — веса (коэффициенты)</li>
+<li>$\hat{y}$ — предсказание модели</li>
+</ul>
+<p><strong>В матричной форме:</strong></p>
+<p>$$\hat{\mathbf{y}} = \mathbf{X}\mathbf{w}$$</p>
+<p>где $\mathbf{X} \in \mathbb{R}^{n \times (p+1)}$ — матрица признаков (с добавленным столбцом единиц для bias), $\mathbf{w} \in \mathbb{R}^{p+1}$ — вектор весов.</p>
+<h2>2.2. Метод наименьших квадратов (Ordinary Least Squares, OLS)</h2>
+<p><strong>Идея:</strong> найти такие веса $\mathbf{w}$, при которых сумма квадратов отклонений предсказаний от истинных значений минимальна.</p>
+<p><strong>Функция потерь (MSE — Mean Squared Error):</strong></p>
+<p>$$L(\mathbf{w}) = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}<em>i)^2 = \frac{1}{n} \sum</em>{i=1}^{n} \left(y_i - \sum_{j=0}^{p} w_j x_{ij}\right)^2$$</p>
+<p><strong>В матричной форме:</strong></p>
+<p>$$L(\mathbf{w}) = \frac{1}{n} |\mathbf{y} - \mathbf{X}\mathbf{w}|^2 = \frac{1}{n} (\mathbf{y} - \mathbf{X}\mathbf{w})^T(\mathbf{y} - \mathbf{X}\mathbf{w})$$</p>
+<p><strong>Аналитическое решение (нормальное уравнение):</strong></p>
+<p>Чтобы найти минимум, берём производную по $\mathbf{w}$ и приравниваем к нулю:</p>
+<p>$$\frac{\partial L}{\partial \mathbf{w}} = -\frac{2}{n} \mathbf{X}^T(\mathbf{y} - \mathbf{X}\mathbf{w}) = 0$$</p>
+<p>$$\mathbf{X}^T\mathbf{X}\mathbf{w} = \mathbf{X}^T\mathbf{y}$$</p>
+<p>$$\hat{\mathbf{w}} = (\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^T\mathbf{y}$$</p>
+<p><strong>Свойства OLS-оценки:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Свойство</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Несмещённость</strong></td>
+<td>$E[\hat{\mathbf{w}}] = \mathbf{w}_{true}$ при выполнении предпосылок</td>
+</tr>
+<tr>
+<td><strong>Эффективность</strong></td>
+<td>Наименьшая дисперсия среди всех несмещённых линейных оценок (теорема Гаусса-Маркова)</td>
+</tr>
+<tr>
+<td><strong>Состоятельность</strong></td>
+<td>$\hat{\mathbf{w}} \to \mathbf{w}_{true}$ при $n \to \infty$</td>
+</tr>
+</tbody></table>
+<p><strong>Предпосылки OLS (теорема Гаусса-Маркова):</strong></p>
+<ol>
+<li><strong>Линейность:</strong> $y_i = \mathbf{w}^T\mathbf{x}_i + \varepsilon_i$</li>
+<li><strong>Случайная выборка:</strong> $(x_i, y_i)$ независимы</li>
+<li><strong>Нулевое условное среднее:</strong> $E[\varepsilon_i | \mathbf{x}_i] = 0$</li>
+<li><strong>Гомоскедастичность:</strong> $Var(\varepsilon_i | \mathbf{x}_i) = \sigma^2$ (постоянная дисперсия)</li>
+<li><strong>Отсутствие мультиколлинеарности:</strong> $\mathbf{X}^T\mathbf{X}$ обратима</li>
+</ol>
+<p><strong>Проблемы OLS на датасете House Prices:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Проблема</th>
+<th>Причина</th>
+<th>Последствие</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Переобучение</td>
+<td>79 признаков при 1460 наблюдениях</td>
+<td>Плохое обобщение на test</td>
+</tr>
+<tr>
+<td>Мультиколлинеарность</td>
+<td>GarageCars ↔ GarageArea (0.88)</td>
+<td>Нестабильные веса</td>
+</tr>
+<tr>
+<td>Выбросы</td>
+<td>Элитные дома, аномальная площадь</td>
+<td>Сильное искажение</td>
+</tr>
+<tr>
+<td>Скошенность</td>
+<td>SalePrice skew = 1.88</td>
+<td>Нарушение нормальности остатков</td>
+</tr>
+</tbody></table>
+<p><strong>Именно эти проблемы решают методы регуляризации и предобработки.</strong></p>
+<hr>
+<h1>Часть 3. Регуляризация: Ridge, Lasso, ElasticNet</h1>
+<h2>3.1. Зачем нужна регуляризация?</h2>
+<p>При большом числе признаков OLS-решение переобучается: модель запоминает шум в обучающих данных, а на новых данных показывает плохой результат.</p>
+<p><strong>Идея регуляризации:</strong> добавить штраф за большие веса к функции потерь. Это заставляет модель искать <strong>простое</strong> решение.</p>
+<h2>3.2. Ridge-регрессия (L2-регуляризация)</h2>
+<p><strong>Функция потерь:</strong></p>
+<p>$$L_{Ridge}(\mathbf{w}) = \underbrace{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}<em>i)^2}</em>{\text{MSE}} + \underbrace{\alpha \sum_{j=1}^{p} w_j^2}_{L_2\text{-штраф}}$$</p>
+<p>где $\alpha &gt; 0$ — гиперпараметр,控制 силу регуляризации.</p>
+<p><strong>Аналитическое решение:</strong></p>
+<p>$$\hat{\mathbf{w}}_{Ridge} = (\mathbf{X}^T\mathbf{X} + \alpha \mathbf{I})^{-1}\mathbf{X}^T\mathbf{y}$$</p>
+<p>Добавление $\alpha \mathbf{I}$ гарантирует обратимость матрицы даже при мультиколлинеарности.</p>
+<p><strong>Свойства Ridge:</strong></p>
+<ul>
+<li>Веса <strong>уменьшаются</strong>, но <strong>не обнуляются</strong></li>
+<li>Хорошо работает при мультиколлинеарности</li>
+<li>Не выполняет отбор признаков</li>
+<li>Эквивалентна MAP-оценке с гауссовским априорным распределением весов: $w_j \sim \mathcal{N}(0, \frac{1}{2\alpha})$</li>
+</ul>
+<p><strong>Влияние $\alpha$:</strong></p>
+<table>
+<thead>
+<tr>
+<th>$\alpha$</th>
+<th>Эффект</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>$\alpha \to 0$</td>
+<td>OLS (переобучение)</td>
+</tr>
+<tr>
+<td>$\alpha$ оптимальное</td>
+<td>Баланс bias-variance</td>
+</tr>
+<tr>
+<td>$\alpha \to \infty$</td>
+<td>Все веса $\to 0$ (недообучение)</td>
+</tr>
+</tbody></table>
+<h2>3.3. Lasso-регрессия (L1-регуляризация)</h2>
+<p><strong>Функция потерь:</strong></p>
+<p>$$L_{Lasso}(\mathbf{w}) = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}<em>i)^2 + \alpha \sum</em>{j=1}^{p} |w_j|$$</p>
+<p><strong>Ключевое отличие от Ridge:</strong> L1-штраф заставляет некоторые веса <strong>точно обнуляться</strong>. Это происходит потому, что контур L1-штрафа имеет «углы» на осях, и минимум часто попадает именно в угол.</p>
+<p><strong>Свойства Lasso:</strong></p>
+<ul>
+<li>Выполняет <strong>автоматический отбор признаков</strong> (feature selection)</li>
+<li>Разреженное решение (sparse solution)</li>
+<li>Устойчив к выбросам в признаках</li>
+<li>Эквивалентна MAP-оценке с лапласовским априорным распределением: $w_j \sim \text{Laplace}(0, 1/\alpha)$</li>
+</ul>
+<p><strong>Геометрическая интерпретация:</strong></p>
+<pre><code>Ridge: минимизация MSE при условии ||w||₂² ≤ t   (круг)
+Lasso: минимизация MSE при условии ||w||₁ ≤ t    (ромб)
+</code></pre>
+<p>Из-за формы ромба оптимум часто на вершине → некоторые $w_j = 0$.</p>
+<h2>3.4. ElasticNet — компромисс</h2>
+<p><strong>Функция потерь:</strong></p>
+<p>$$L_{ElasticNet}(\mathbf{w}) = \text{MSE} + \alpha \left( \rho \sum_{j=1}^{p} |w_j| + \frac{1-\rho}{2} \sum_{j=1}^{p} w_j^2 \right)$$</p>
+<p>где:</p>
+<ul>
+<li>$\alpha$ — общая сила регуляризации</li>
+<li>$\rho$ — баланс между L1 и L2 (0 ≤ ρ ≤ 1)</li>
+</ul>
+<p><strong>Свойства:</strong></p>
+<ul>
+<li>Комбинирует отбор признаков (L1) и устойчивость (L2)</li>
+<li>Работает лучше Lasso при сильно коррелированных признаках</li>
+<li>Требует подбора двух гиперпараметров</li>
+</ul>
+<h2>3.5. Сравнение методов</h2>
+<table>
+<thead>
+<tr>
+<th>Метод</th>
+<th>Штраф</th>
+<th>Отбор признаков</th>
+<th>Устойчивость к мультиколлинеарности</th>
+<th>Гиперпараметры</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>OLS</td>
+<td>—</td>
+<td>❌</td>
+<td>❌</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Ridge</td>
+<td>L2</td>
+<td>❌</td>
+<td>✅</td>
+<td>α</td>
+</tr>
+<tr>
+<td>Lasso</td>
+<td>L1</td>
+<td>✅</td>
+<td>⚠️ (нестабилен)</td>
+<td>α</td>
+</tr>
+<tr>
+<td>ElasticNet</td>
+<td>L1 + L2</td>
+<td>✅</td>
+<td>✅</td>
+<td>α, ρ</td>
+</tr>
+</tbody></table>
+<hr>
+<h1>Часть 4. Предобработка данных для регрессии</h1>
+<h2>4.1. Пропуски в данных</h2>
+<p><strong>Типы пропусков (по механизму возникновения):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Тип</th>
+<th>Аббревиатура</th>
+<th>Описание</th>
+<th>Пример в House Prices</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Полностью случайные</td>
+<td>MCAR</td>
+<td>Пропуск не зависит ни от чего</td>
+<td>Редкий случай</td>
+</tr>
+<tr>
+<td>Случайные</td>
+<td>MAR</td>
+<td>Пропуск зависит от других признаков</td>
+<td>LotFrontage зависит от Neighborhood</td>
+</tr>
+<tr>
+<td>Неслучайные</td>
+<td>MNAR</td>
+<td>Пропуск зависит от самого значения</td>
+<td>PoolQC = NaN, потому что нет бассейна</td>
+</tr>
+</tbody></table>
+<p><strong>Стратегии обработки:</strong></p>
+<h3>4.1.1. Смысловые пропуски → &quot;None&quot; или 0</h3>
+<p>В House Prices пропуски в PoolQC, GarageType, BsmtQual <strong>не являются потерей данных</strong> — они означают «отсутствие объекта».</p>
+<pre><code class="language-python"># PoolQC = NaN → нет бассейна → &quot;None&quot;
+train_df[&#39;PoolQC&#39;] = train_df[&#39;PoolQC&#39;].fillna(&#39;None&#39;)
+# GarageArea = NaN → нет гаража → 0
+train_df[&#39;GarageArea&#39;] = train_df[&#39;GarageArea&#39;].fillna(0)
+</code></pre>
+<h3>4.1.2. Случайные пропуски → медиана по группам</h3>
+<p>LotFrontage — протяжённость участка вдоль улицы. Зависит от района:</p>
+<pre><code class="language-python">train_df[&#39;LotFrontage&#39;] = train_df.groupby(&#39;Neighborhood&#39;)[&#39;LotFrontage&#39;].transform(
+    lambda x: x.fillna(x.median())
+)
+</code></pre>
+<h3>4.1.3. KNN-импутация</h3>
+<p>Заполнение на основе K ближайших соседей в пространстве признаков:</p>
+<pre><code class="language-python">from sklearn.impute import KNNImputer
+imputer = KNNImputer(n_neighbors=5)
+X_imputed = imputer.fit_transform(X)
+</code></pre>
+<p><strong>Почему KNN может быть лучше:</strong> учитывает нелинейные связи между признаками.</p>
+<h2>4.2. Обнаружение и обработка выбросов</h2>
+<h3>4.2.1. Метод IQR (Interquartile Range)</h3>
+<p><strong>Формула:</strong></p>
+<p>$$IQR = Q_3 - Q_1$$</p>
+<p>$$\text{Нижняя граница} = Q_1 - 1.5 \cdot IQR$$</p>
+<p>$$\text{Верхняя граница} = Q_3 + 1.5 \cdot IQR$$</p>
+<p><strong>Интерпретация:</strong> объекты за границами считаются выбросами. Для нормального распределения за границами лежит ~0.7% данных.</p>
+<p><strong>Преимущества:</strong> не требует предположения о нормальности, устойчив к выбросам.</p>
+<h3>4.2.2. Метод Z-score</h3>
+<p><strong>Формула:</strong></p>
+<p>$$z_i = \frac{x_i - \mu}{\sigma}$$</p>
+<p><strong>Правило:</strong> $|z_i| &gt; 3$ → выброс.</p>
+<p><strong>Ограничение:</strong> предполагает нормальное распределение. Для скошенных данных (как SalePrice) работает плохо.</p>
+<h3>4.2.3. Модифицированный Z-score</h3>
+<p>Для устойчивости к выбросам используют медиану и MAD:</p>
+<p>$$M_i = \frac{0.6745 \cdot (x_i - \text{median})}{\text{MAD}}$$</p>
+<p>где MAD — median absolute deviation.</p>
+<p><strong>Правило:</strong> $|M_i| &gt; 3.5$ → выброс.</p>
+<h3>4.2.4. Обработка выбросов в House Prices</h3>
+<p>В соревновании Kaggle известны конкретные выбросы: дома с GrLivArea &gt; 4000 кв. футов и SalePrice &lt; $300,000. Это аномалии — большой дом по низкой цене.</p>
+<pre><code class="language-python">train_df = train_df[
+    (train_df[&#39;GrLivArea&#39;] &lt; 4000) &amp; 
+    (train_df[&#39;SalePrice&#39;] &lt; 500000)
+]
+</code></pre>
+<p><strong>Важно:</strong> удалять выбросы нужно <strong>только из train</strong>, не из test! Иначе утечка данных.</p>
+<h2>4.3. Логарифмирование скошенной целевой переменной</h2>
+<h3>4.3.1. Проблема скошенности</h3>
+<p>SalePrice имеет <strong>правую асимметрию</strong> (skew ≈ 1.88):</p>
+<ul>
+<li>Большинство домов дешёвые</li>
+<li>Несколько домов очень дорогие</li>
+<li>Распределение не нормальное</li>
+</ul>
+<p><strong>Последствия для регрессии:</strong></p>
+<ol>
+<li>Нарушение предпосылки нормальности остатков</li>
+<li>Гетероскедастичность (дисперсия ошибок растёт с ростом y)</li>
+<li>Большое влияние выбросов</li>
+<li>Смещённые предсказания для дорогих домов</li>
+</ol>
+<h3>4.3.2. Логарифмическое преобразование</h3>
+<p><strong>Формула:</strong></p>
+<p>$$y&#39; = \log(1 + y) \quad \text{(log1p)}$$</p>
+<p><strong>Обратное преобразование:</strong></p>
+<p>$$y = \exp(y&#39;) - 1 \quad \text{(expm1)}$$</p>
+<p><strong>Почему log1p, а не log?</strong> log1p определён при y = 0, log(0) = -∞.</p>
+<p><strong>Эффект:</strong></p>
+<table>
+<thead>
+<tr>
+<th>До log1p</th>
+<th>После log1p</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>skew = 1.88</td>
+<td>skew ≈ 0.12</td>
+</tr>
+<tr>
+<td>Правая асимметрия</td>
+<td>Почти нормальное</td>
+</tr>
+<tr>
+<td>Гетероскедастичность</td>
+<td>Гомоскедастичность</td>
+</tr>
+</tbody></table>
+<h3>4.3.3. Интерпретация коэффициентов</h3>
+<p>После логарифмирования целевой переменной коэффициенты интерпретируются как <strong>относительные изменения</strong>:</p>
+<p>$$\frac{\Delta y}{y} \approx \Delta \log(y) = w_j \cdot \Delta x_j$$</p>
+<p>Например, если $w_j = 0.05$ для OverallQual, то увеличение OverallQual на 1 балл связано с ростом цены на ~5%.</p>
+<h3>4.3.4. Важное предостережение</h3>
+<p>Метрики, посчитанные в log-пространстве (RMSE log), <strong>не равны</strong> метрикам в долларах. Для интерпретации нужно возвращать предсказания в исходное пространство:</p>
+<pre><code class="language-python">y_pred_log = model.predict(X_test)
+y_pred_real = np.expm1(y_pred_log)
+</code></pre>
+<h2>4.4. Кодирование категориальных признаков</h2>
+<h3>4.4.1. Label Encoding (порядковое)</h3>
+<p>Для <strong>порядковых</strong> признаков, где важен порядок:</p>
+<pre><code class="language-python">qual_map = {&#39;None&#39;: 0, &#39;Po&#39;: 1, &#39;Fa&#39;: 2, &#39;TA&#39;: 3, &#39;Gd&#39;: 4, &#39;Ex&#39;: 5}
+train_df[&#39;ExterQual&#39;] = train_df[&#39;ExterQual&#39;].map(qual_map)
+</code></pre>
+<h3>4.4.2. One-Hot Encoding (номинальное)</h3>
+<p>Для <strong>номинальных</strong> признаков без порядка:</p>
+<pre><code class="language-python">train_df = pd.get_dummies(train_df, columns=[&#39;MSZoning&#39;], drop_first=True)
+</code></pre>
+<p><strong>drop_first=True</strong> — удаляем первую категорию, чтобы избежать мультиколлинеарности (dummy variable trap).</p>
+<h3>4.4.3. Target Encoding</h3>
+<p>Замена категории на среднее значение целевой переменной:</p>
+<p>$$\text{Neighborhood}<em>k \to \frac{1}{n_k} \sum</em>{i \in \text{Neighborhood}_k} y_i$$</p>
+<p><strong>Риск утечки данных:</strong> нужно вычислять внутри кросс-валидации.</p>
+<h3>4.4.4. Сравнение методов для House Prices</h3>
+<table>
+<thead>
+<tr>
+<th>Признак</th>
+<th>Тип</th>
+<th>Метод</th>
+<th>Обоснование</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ExterQual</td>
+<td>Порядковый</td>
+<td>Label</td>
+<td>Порядок важен</td>
+</tr>
+<tr>
+<td>Neighborhood</td>
+<td>Номинальный (25)</td>
+<td>Target Encoding</td>
+<td>Много категорий</td>
+</tr>
+<tr>
+<td>MSZoning</td>
+<td>Номинальный (5)</td>
+<td>One-Hot</td>
+<td>Мало категорий</td>
+</tr>
+<tr>
+<td>GarageType</td>
+<td>Номинальный (6)</td>
+<td>One-Hot</td>
+<td>Умеренно</td>
+</tr>
+</tbody></table>
+<h2>4.5. Масштабирование признаков</h2>
+<h3>4.5.1. StandardScaler</h3>
+<p>$$z = \frac{x - \mu}{\sigma}$$</p>
+<p>Результат: mean = 0, std = 1.</p>
+<p><strong>Когда:</strong> нормальное распределение, LR, Ridge, Lasso, SVM.</p>
+<h3>4.5.2. MinMaxScaler</h3>
+<p>$$z = \frac{x - \min}{\max - \min}$$</p>
+<p>Результат: диапазон [0, 1].</p>
+<p><strong>Когда:</strong> нейросети, CNN. Чувствителен к выбросам.</p>
+<h3>4.5.3. RobustScaler</h3>
+<p>$$z = \frac{x - \text{median}}{IQR}$$</p>
+<p><strong>Когда:</strong> много выбросов.</p>
+<h3>4.5.4. Что масштабировать?</h3>
+<table>
+<thead>
+<tr>
+<th>Модель</th>
+<th>Нужно масштабирование?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Linear Regression</td>
+<td>✅ Да</td>
+</tr>
+<tr>
+<td>Ridge, Lasso, ElasticNet</td>
+<td>✅ Да (для корректной регуляризации)</td>
+</tr>
+<tr>
+<td>Decision Tree</td>
+<td>❌ Нет</td>
+</tr>
+<tr>
+<td>Random Forest</td>
+<td>❌ Нет</td>
+</tr>
+<tr>
+<td>XGBoost</td>
+<td>❌ Нет</td>
+</tr>
+<tr>
+<td>SVM</td>
+<td>✅ Обязательно</td>
+</tr>
+<tr>
+<td>KNN</td>
+<td>✅ Обязательно</td>
+</tr>
+</tbody></table>
+<hr>
+<h1>Часть 5. Feature Engineering</h1>
+<h2>5.1. Создание новых признаков</h2>
+<p>Feature Engineering — искусство создания признаков, которые лучше описывают предметную область.</p>
+<h3>5.1.1. Суммирование и агрегация</h3>
+<pre><code class="language-python"># Общая площадь дома
+train_df[&#39;TotalSF&#39;] = (
+    train_df[&#39;TotalBsmtSF&#39;] +    # подвал
+    train_df[&#39;1stFlrSF&#39;] +        # первый этаж
+    train_df[&#39;2ndFlrSF&#39;]           # второй этаж
+)
+
+# Общее число ванных
+train_df[&#39;TotalBath&#39;] = (
+    train_df[&#39;FullBath&#39;] + 
+    0.5 * train_df[&#39;HalfBath&#39;] +   # половинные = 0.5
+    train_df[&#39;BsmtFullBath&#39;] + 
+    0.5 * train_df[&#39;BsmtHalfBath&#39;]
+)
+
+# Общее крыльцо
+train_df[&#39;TotalPorch&#39;] = (
+    train_df[&#39;OpenPorchSF&#39;] + 
+    train_df[&#39;EnclosedPorch&#39;] + 
+    train_df[&#39;3SsnPorch&#39;] + 
+    train_df[&#39;ScreenPorch&#39;] + 
+    train_df[&#39;WoodDeckSF&#39;]
+)
+</code></pre>
+<h3>5.1.2. Возрастные признаки</h3>
+<pre><code class="language-python"># Возраст дома на момент продажи
+train_df[&#39;HouseAge&#39;] = train_df[&#39;YrSold&#39;] - train_df[&#39;YearBuilt&#39;]
+
+# Возраст последней реконструкции
+train_df[&#39;RemodAge&#39;] = train_df[&#39;YrSold&#39;] - train_df[&#39;YearRemodAdd&#39;]
+
+# Был ли дом реконструирован?
+train_df[&#39;IsRemodeled&#39;] = (train_df[&#39;YearRemodAdd&#39;] != train_df[&#39;YearBuilt&#39;]).astype(int)
+</code></pre>
+<h3>5.1.3. Бинарные признаки</h3>
+<pre><code class="language-python">train_df[&#39;HasPool&#39;] = (train_df[&#39;PoolArea&#39;] &gt; 0).astype(int)
+train_df[&#39;Has2ndFloor&#39;] = (train_df[&#39;2ndFlrSF&#39;] &gt; 0).astype(int)
+train_df[&#39;HasGarage&#39;] = (train_df[&#39;GarageArea&#39;] &gt; 0).astype(int)
+train_df[&#39;HasBsmt&#39;] = (train_df[&#39;TotalBsmtSF&#39;] &gt; 0).astype(int)
+train_df[&#39;HasFireplace&#39;] = (train_df[&#39;Fireplaces&#39;] &gt; 0).astype(int)
+</code></pre>
+<h3>5.1.4. Взаимодействия</h3>
+<pre><code class="language-python"># Качество × площадь — комбинированный эффект
+train_df[&#39;OverallQual_TotalSF&#39;] = train_df[&#39;OverallQual&#39;] * train_df[&#39;TotalSF&#39;]
+
+# Качество × возраст
+train_df[&#39;Qual_Age&#39;] = train_df[&#39;OverallQual&#39;] / (train_df[&#39;HouseAge&#39;] + 1)
+</code></pre>
+<h3>5.1.5. Полиномиальные признаки</h3>
+<pre><code class="language-python">from sklearn.preprocessing import PolynomialFeatures
+poly = PolynomialFeatures(degree=2, include_bias=False)
+X_poly = poly.fit_transform(X)
+</code></pre>
+<p><strong>Осторожно:</strong> полиномиальные признаки быстро увеличивают размерность и риск переобучения.</p>
+<h2>5.2. Отбор признаков</h2>
+<h3>5.2.1. Методы фильтрации</h3>
+<ul>
+<li><strong>Корреляция Пирсона</strong> — линейная связь</li>
+<li><strong>Mutual Information</strong> — любая зависимость</li>
+<li><strong>Variance Threshold</strong> — удаление почти константных признаков</li>
+</ul>
+<h3>5.2.2. Методы обёртки</h3>
+<ul>
+<li><strong>RFE (Recursive Feature Elimination)</strong> — рекурсивное удаление наименее важных</li>
+<li><strong>Forward Selection</strong> — добавление по одному</li>
+<li><strong>Backward Elimination</strong> — удаление по одному</li>
+</ul>
+<h3>5.2.3. Встроенные методы</h3>
+<ul>
+<li><strong>Lasso</strong> — обнуляет неинформативные признаки</li>
+<li><strong>Tree-based importance</strong> — важность из Random Forest / XGBoost</li>
+</ul>
+<hr>
+<h1>Часть 6. Оценка качества регрессионных моделей</h1>
+<h2>6.1. Метрики</h2>
+<h3>6.1.1. MSE (Mean Squared Error)</h3>
+<p>$$\text{MSE} = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2$$</p>
+<p><strong>Свойства:</strong></p>
+<ul>
+<li>Штрафует большие ошибки сильнее (квадрат)</li>
+<li>Чувствительна к выбросам</li>
+<li>Единицы: квадрат целевой переменной</li>
+</ul>
+<h3>6.1.2. RMSE (Root Mean Squared Error)</h3>
+<p>$$\text{RMSE} = \sqrt{\text{MSE}} = \sqrt{\frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2}$$</p>
+<p><strong>Свойства:</strong></p>
+<ul>
+<li>В тех же единицах, что и целевая</li>
+<li>Интерпретируема: «средняя ошибка в долларах»</li>
+<li>Чувствительна к выбросам</li>
+</ul>
+<h3>6.1.3. MAE (Mean Absolute Error)</h3>
+<p>$$\text{MAE} = \frac{1}{n} \sum_{i=1}^{n} |y_i - \hat{y}_i|$$</p>
+<p><strong>Свойства:</strong></p>
+<ul>
+<li>Устойчива к выбросам</li>
+<li>В тех же единицах, что и целевая</li>
+<li>Соответствует медианной ошибке</li>
+</ul>
+<h3>6.1.4. R² (Coefficient of Determination)</h3>
+<p>$$R^2 = 1 - \frac{\sum_{i=1}^{n} (y_i - \hat{y}<em>i)^2}{\sum</em>{i=1}^{n} (y_i - \bar{y})^2} = 1 - \frac{\text{SS}<em>{res}}{\text{SS}</em>{tot}}$$</p>
+<p><strong>Интерпретация:</strong></p>
+<ul>
+<li>$R^2 = 1$ — идеальное предсказание</li>
+<li>$R^2 = 0$ — модель не лучше среднего</li>
+<li>$R^2 &lt; 0$ — модель хуже среднего</li>
+</ul>
+<p><strong>Свойства:</strong></p>
+<ul>
+<li>Безразмерная (сравнение между датасетами)</li>
+<li>Не зависит от масштаба целевой</li>
+<li>Может быть обманчива при переобучении</li>
+</ul>
+<h3>6.1.5. Adjusted R²</h3>
+<p>$$R^2_{adj} = 1 - \frac{(1 - R^2)(n - 1)}{n - p - 1}$$</p>
+<p>где n — число наблюдений, p — число признаков.</p>
+<p><strong>Зачем:</strong> штрафует за добавление бесполезных признаков. $R^2$ всегда растёт при добавлении признаков, Adjusted R² — нет.</p>
+<h2>6.2. Сравнение метрик для House Prices</h2>
+<table>
+<thead>
+<tr>
+<th>Метрика</th>
+<th>Значение</th>
+<th>Интерпретация</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RMSE (log)</td>
+<td>0.12</td>
+<td>Средняя ошибка в log-пространстве</td>
+</tr>
+<tr>
+<td>RMSE ($)</td>
+<td>~$25,000</td>
+<td>Средняя ошибка в долларах</td>
+</tr>
+<tr>
+<td>MAE ($)</td>
+<td>~$17,000</td>
+<td>Медианная ошибка</td>
+</tr>
+<tr>
+<td>R²</td>
+<td>0.92</td>
+<td>Модель объясняет 92% дисперсии</td>
+</tr>
+</tbody></table>
+<p><strong>Что важнее для бизнеса?</strong> Для продажи недвижимости часто важнее MAE — типичная ошибка, а не выбросы.</p>
+<hr>
+<h1>Часть 7. Кросс-валидация и подбор гиперпараметров</h1>
+<h2>7.1. Проблема одного train_test_split</h2>
+<p>При единственном разделении:</p>
+<ul>
+<li>Оценка зависит от случайности</li>
+<li>Маленький датасет → нестабильные метрики</li>
+<li>Нет информации о разбросе качества</li>
+</ul>
+<h2>7.2. K-Fold кросс-валидация</h2>
+<p><strong>Алгоритм:</strong></p>
+<ol>
+<li>Разбить данные на K фолдов</li>
+<li>Для i = 1..K:<ul>
+<li>Обучить на K-1 фолдах</li>
+<li>Оценить на i-м фолде</li>
+</ul>
+</li>
+<li>Усреднить метрики</li>
+</ol>
+<p><strong>Формула средней оценки:</strong></p>
+<p>$$\text{CV}<em>K = \frac{1}{K} \sum</em>{i=1}^{K} \text{Metric}_i$$</p>
+<p><strong>Стандартное отклонение:</strong></p>
+<p>$$\sigma = \sqrt{\frac{1}{K-1} \sum_{i=1}^{K} (\text{Metric}_i - \text{CV}_K)^2}$$</p>
+<p><strong>Преимущества:</strong></p>
+<ul>
+<li>Каждый объект побывает в test ровно один раз</li>
+<li>Устойчивая оценка</li>
+<li>Можно оценить дисперсию</li>
+</ul>
+<h2>7.3. Стратифицированная кросс-валидация</h2>
+<p>Для регрессии стратификация обычно не применяется, но для классификации — обязательна.</p>
+<p>Для регрессии используют <strong>KBinsDiscretizer</strong> для создания «страт» по целевой переменной.</p>
+<h2>7.4. GridSearchCV</h2>
+<p><strong>Алгоритм:</strong></p>
+<ol>
+<li>Задать сетку параметров</li>
+<li>Для каждой комбинации:<ul>
+<li>Провести K-Fold CV</li>
+<li>Записать среднюю метрику</li>
+</ul>
+</li>
+<li>Выбрать комбинацию с лучшей метрикой</li>
+</ol>
+<p><strong>Пример для Ridge:</strong></p>
+<pre><code class="language-python">param_grid = {&#39;alpha&#39;: [0.001, 0.01, 0.1, 1.0, 10.0, 100.0]}
+grid = GridSearchCV(Ridge(), param_grid, cv=5, scoring=&#39;neg_rmse&#39;)
+grid.fit(X_train, y_train)
+print(grid.best_params_)  # {&#39;alpha&#39;: 1.0}
+</code></pre>
+<p><strong>Проблема:</strong> экспоненциальный рост числа комбинаций.</p>
+<h2>7.5. RandomizedSearchCV</h2>
+<p>Случайный выбор N комбинаций из распределений:</p>
+<pre><code class="language-python">from scipy.stats import loguniform
+param_dist = {&#39;alpha&#39;: loguniform(1e-4, 1e2)}
+random_search = RandomizedSearchCV(Ridge(), param_dist, n_iter=50, cv=5)
+</code></pre>
+<p><strong>Преимущества:</strong> быстрее GridSearch, часто находит оптимум.</p>
+<hr>
+<h1>Часть 8. Диагностика регрессионных моделей</h1>
+<h2>8.1. Анализ остатков</h2>
+<p><strong>Остатки:</strong> $e_i = y_i - \hat{y}_i$</p>
+<p><strong>Что проверять:</strong></p>
+<ol>
+<li><strong>Среднее остатков ≈ 0</strong> — нет систематической ошибки</li>
+<li><strong>Нормальность</strong> — QQ-plot</li>
+<li><strong>Гомоскедастичность</strong> — разброс не меняется</li>
+<li><strong>Отсутствие автокорреляции</strong> — Durbin-Watson</li>
+</ol>
+<p><strong>График остатков:</strong></p>
+<pre><code class="language-python">plt.scatter(y_pred, residuals)
+plt.axhline(y=0, color=&#39;r&#39;, linestyle=&#39;--&#39;)
+</code></pre>
+<p><strong>Паттерны:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Паттерн</th>
+<th>Проблема</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Случайный разброс</td>
+<td>✅ Всё хорошо</td>
+</tr>
+<tr>
+<td>Веер</td>
+<td>Гетероскедастичность</td>
+</tr>
+<tr>
+<td>U-образный</td>
+<td>Нелинейность</td>
+</tr>
+<tr>
+<td>Тренд</td>
+<td>Смещение</td>
+</tr>
+</tbody></table>
+<h2>8.2. Кривые обучения</h2>
+<p><strong>График:</strong> train error и validation error vs размер обучающей выборки.</p>
+<pre><code class="language-python">from sklearn.model_selection import learning_curve
+train_sizes, train_scores, val_scores = learning_curve(
+    estimator, X, y, cv=5, train_sizes=np.linspace(0.1, 1.0, 10)
+)
+</code></pre>
+<p><strong>Интерпретация:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Ситуация</th>
+<th>Диагноз</th>
+<th>Решение</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Train низкий, Val высокий</td>
+<td>Переобучение</td>
+<td>Регуляризация, больше данных</td>
+</tr>
+<tr>
+<td>Train высокий, Val высокий</td>
+<td>Недообучение</td>
+<td>Сложнее модель, больше признаков</td>
+</tr>
+<tr>
+<td>Обе низкие, сходятся</td>
+<td>Хорошо</td>
+<td>Оптимум</td>
+</tr>
+</tbody></table>
+<h2>8.3. Кривые валидации</h2>
+<p><strong>График:</strong> метрика vs гиперпараметр (например, α для Ridge).</p>
+<pre><code class="language-python">from sklearn.model_selection import validation_curve
+train_scores, val_scores = validation_curve(
+    Ridge(), X, y, param_name=&#39;alpha&#39;, param_range=[0.001, 0.01, 0.1, 1, 10]
+)
+</code></pre>
+<p><strong>Помогает найти оптимум α</strong> и увидеть, где начинается переобучение.</p>
+<hr>
+<h1>Часть 9. Практические аспекты для House Prices</h1>
+<h2>9.1. Полный пайплайн предобработки</h2>
+<pre><code>1. Загрузка данных
+2. EDA: распределения, корреляции, пропуски
+3. Обработка пропусков:
+   - Смысловые → &quot;None&quot; или 0
+   - Случайные → медиана по группам
+   - Оставшиеся → мода
+4. Обработка выбросов: IQR или доменные знания
+5. Логарифмирование SalePrice
+6. Feature Engineering:
+   - TotalSF, TotalBath, TotalPorch
+   - HouseAge, RemodAge
+   - HasPool, HasGarage
+   - Взаимодействия
+7. Кодирование категорий:
+   - Порядковые → Label
+   - Номинальные → One-Hot или Target
+8. Разделение train/test
+9. Масштабирование (fit на train)
+10. Обучение моделей: LR, Ridge, Lasso, ElasticNet
+11. Кросс-валидация и GridSearchCV
+12. Оценка на test
+13. Интерпретация коэффициентов
+14. Сохранение модели
+</code></pre>
+<h2>9.2. Что даёт каждый шаг предобработки</h2>
+<table>
+<thead>
+<tr>
+<th>Шаг</th>
+<th>Влияние на RMSE (log)</th>
+<th>Обоснование</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Baseline (без обработки)</td>
+<td>~0.20</td>
+<td>Пропуски, выбросы</td>
+</tr>
+<tr>
+<td>+ Обработка пропусков</td>
+<td>~0.16</td>
+<td>Убрали NaN</td>
+</tr>
+<tr>
+<td>+ Логарифмирование целевой</td>
+<td>~0.14</td>
+<td>Нормальность</td>
+</tr>
+<tr>
+<td>+ Feature Engineering</td>
+<td>~0.13</td>
+<td>Больше информации</td>
+</tr>
+<tr>
+<td>+ Регуляризация (Lasso)</td>
+<td>~0.12</td>
+<td>Борьба с переобучением</td>
+</tr>
+<tr>
+<td>+ Кросс-валидация + GridSearch</td>
+<td>~0.115</td>
+<td>Оптимальные гиперпараметры</td>
+</tr>
+</tbody></table>
+<h2>9.3. Типичные ошибки</h2>
+<table>
+<thead>
+<tr>
+<th>Ошибка</th>
+<th>Последствие</th>
+<th>Правильно</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>scaler.fit_transform(X_all)</code> до split</td>
+<td>Утечка данных</td>
+<td>Сначала split</td>
+</tr>
+<tr>
+<td>Удаление выбросов из test</td>
+<td>Утечка</td>
+<td>Только из train</td>
+</tr>
+<tr>
+<td>Target Encoding до split</td>
+<td>Утечка</td>
+<td>Внутри CV</td>
+</tr>
+<tr>
+<td>Подача категорий строками в модель</td>
+<td>Ошибка</td>
+<td>Кодировать</td>
+</tr>
+<tr>
+<td>Игнор мультиколлинеарности</td>
+<td>Нестабильные веса</td>
+<td>Ridge/Lasso</td>
+</tr>
+<tr>
+<td>Обучение на скошенной целевой</td>
+<td>Плохой R²</td>
+<td>log1p</td>
+</tr>
+</tbody></table>
+<hr>
+<h1>Часть 10. Итоговые выводы</h1>
+<h2>10.1. Что важно запомнить</h2>
+<ol>
+<li><p><strong>Регрессия</strong> — предсказание непрерывной величины. <strong>Классификация</strong> — дискретной.</p>
+</li>
+<li><p><strong>OLS</strong> минимизирует MSE. Аналитическое решение: $\hat{\mathbf{w}} = (\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^T\mathbf{y}$.</p>
+</li>
+<li><p><strong>Ridge</strong> (L2) уменьшает веса, <strong>Lasso</strong> (L1) обнуляет их — выполняет отбор признаков.</p>
+</li>
+<li><p><strong>ElasticNet</strong> — компромисс между Ridge и Lasso.</p>
+</li>
+<li><p><strong>Логарифмирование</strong> скошенной целевой переменной улучшает нормальность и гомоскедастичность.</p>
+</li>
+<li><p><strong>Пропуски</strong> бывают смысловыми (→ &quot;None&quot;) и случайными (→ медиана).</p>
+</li>
+<li><p><strong>Выбросы</strong> удаляются методом IQR или Z-score. Только из train!</p>
+</li>
+<li><p><strong>Кросс-валидация</strong> даёт устойчивую оценку. <strong>GridSearchCV</strong> — оптимальные гиперпараметры.</p>
+</li>
+<li><p><strong>fit_transform</strong> только на train. <strong>transform</strong> на test.</p>
+</li>
+<li><p><strong>R²</strong> — доля объяснённой дисперсии. <strong>RMSE</strong> — средняя ошибка в единицах целевой.</p>
+</li>
+</ol>
+<h2>10.2. Чек-лист для любого регрессионного проекта</h2>
+<pre><code>□ Проверил распределение целевой (skew?)
+□ Обработал пропуски (семантика + статистика)
+□ Удалил выбросы (IQR/Z-score, только train)
+□ Логарифмировал скошенную целевую (если нужно)
+□ Создал новые признаки (агрегации, взаимодействия)
+□ Закодировал категориальные (Label/One-Hot/Target)
+□ Разделил train/test ДО масштабирования
+□ Масштабировал признаки (fit на train)
+□ Обучил baseline модель
+□ Сравнил Ridge/Lasso/ElasticNet
+□ Провёл кросс-валидацию
+□ Подобрал гиперпараметры (GridSearchCV)
+□ Оценил на test (RMSE, MAE, R²)
+□ Проанализировал остатки
+□ Интерпретировал коэффициенты
+□ Сохранил модель и метаданные
+</code></pre>
+<hr>
+<p><strong>Ключевой вывод:</strong> House Prices — идеальный датасет для изучения регрессии, потому что он содержит все классические проблемы: пропуски, выбросы, скошенность, мультиколлинеарность, категориальные признаки. Решение этих проблем через предобработку и регуляризацию — фундаментальный навык ML-инженера.</p>
+
+      </body>
+      </html>
+    

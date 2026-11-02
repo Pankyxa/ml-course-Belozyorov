@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📈 Регрессия простыми словами — Полный разбор</title>
+<style>
+/* ============ RESET & BASE ============ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    font-family: 'Segoe UI', 'SF Pro Display', system-ui, -apple-system, sans-serif;
+    background: #0a0e27;
+    color: #fff;
+    line-height: 1.7;
+    overflow-x: hidden;
+}
+
+/* ============ BACKGROUND ============ */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(0,212,255,0.12) 0%, transparent 50%),
+        radial-gradient(circle at 85% 80%, rgba(255,0,110,0.12) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(138,43,226,0.08) 0%, transparent 60%),
+        linear-gradient(135deg, #0a0e27 0%, #1a1a4e 50%, #0f0c29 100%);
+    z-index: -2;
+}
+
+.orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
+    z-index: -1;
+    pointer-events: none;
+}
+.orb1 { width: 500px; height: 500px; background: #00d4ff; top: 5%; left: -150px; animation: float1 25s infinite ease-in-out; }
+.orb2 { width: 600px; height: 600px; background: #ff006e; top: 50%; right: -200px; animation: float2 30s infinite ease-in-out; }
+.orb3 { width: 400px; height: 400px; background: #8a2be2; bottom: 5%; left: 40%; animation: float3 35s infinite ease-in-out; }
+
+@keyframes float1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(150px,100px); } }
+@keyframes float2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-150px,-100px); } }
+@keyframes float3 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-100px,50px) scale(1.2); } }
+
+/* ============ PROGRESS BAR ============ */
+.progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #00d4ff, #ff006e, #feca57);
+    z-index: 100;
+    transition: width 0.1s ease;
+    box-shadow: 0 0 20px rgba(0,212,255,0.6);
+}
+
+/* ============ MENU ============ */
+.menu-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 60;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(10,14,39,0.85);
+    border: 1px solid rgba(0,212,255,0.3);
+    color: #00d4ff;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(20px);
+    transition: all 0.3s;
+}
+.menu-btn:hover {
+    background: rgba(0,212,255,0.25);
+    transform: scale(1.05);
+}
+
+.menu-panel {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 400px;
+    height: 100%;
+    background: rgba(10,14,39,0.97);
+    backdrop-filter: blur(30px);
+    border-left: 1px solid rgba(0,212,255,0.3);
+    z-index: 70;
+    transition: right 0.4s ease;
+    padding: 30px 24px;
+    overflow-y: auto;
+}
+.menu-panel.open { right: 0; }
+.menu-panel h3 {
+    color: #00d4ff;
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+.menu-panel .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: #00d4ff;
+    font-size: 24px;
+    cursor: pointer;
+}
+.menu-item {
+    display: block;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    color: #d0d0e0;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+.menu-item:hover {
+    background: rgba(0,212,255,0.1);
+    border-color: rgba(0,212,255,0.3);
+    color: #00d4ff;
+}
+
+/* ============ CONTAINER ============ */
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 100px;
+}
+
+/* ============ HERO ============ */
+.hero {
+    text-align: center;
+    padding: 60px 20px 80px;
+    position: relative;
+}
+.hero-emoji {
+    font-size: 100px;
+    margin-bottom: 24px;
+    display: block;
+    animation: bob 3s infinite ease-in-out;
+    filter: drop-shadow(0 0 40px rgba(0,212,255,0.6));
+}
+@keyframes bob {
+    0%,100% { transform: translateY(0) rotate(-5deg); }
+    50% { transform: translateY(-15px) rotate(5deg); }
+}
+.hero h1 {
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #00d4ff 50%, #ff006e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+}
+.hero .subtitle {
+    font-size: clamp(16px, 2vw, 22px);
+    color: #a0a0c0;
+    font-weight: 300;
+    max-width: 700px;
+    margin: 0 auto 30px;
+}
+.hero .badges {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 24px;
+}
+.hero .badge {
+    padding: 10px 20px;
+    border-radius: 30px;
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.3);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ============ SECTIONS ============ */
+.section {
+    margin-bottom: 60px;
+    padding: 32px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+}
+.section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #00d4ff, #ff006e, transparent);
+}
+
+.section-number {
+    display: inline-block;
+    background: linear-gradient(135deg, #00d4ff, #ff006e);
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+}
+
+.section h2 {
+    font-size: clamp(24px, 3vw, 34px);
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    line-height: 1.2;
+}
+
+.section h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #00d4ff;
+    margin: 24px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section h4 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #ff6b9d;
+    margin: 18px 0 10px;
+}
+
+.section p {
+    font-size: 16px;
+    color: #d0d0e0;
+    margin-bottom: 14px;
+    line-height: 1.75;
+}
+
+.section strong {
+    color: #00d4ff;
+    font-weight: 700;
+}
+
+.section em {
+    color: #feca57;
+    font-style: normal;
+    font-weight: 600;
+}
+
+/* ============ CARDS ============ */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin: 24px 0;
+}
+.card {
+    padding: 22px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(0,212,255,0.4);
+    box-shadow: 0 20px 40px rgba(0,212,255,0.15);
+}
+.card .icon {
+    font-size: 40px;
+    margin-bottom: 14px;
+    display: block;
+}
+.card h4 {
+    color: #00d4ff;
+    font-size: 17px;
+    margin-bottom: 10px;
+    margin-top: 0;
+}
+.card p {
+    font-size: 14px;
+    color: #b0b0d0;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* ============ HIGHLIGHT BOXES ============ */
+.highlight {
+    padding: 20px 24px;
+    border-radius: 14px;
+    border-left: 5px solid #00d4ff;
+    background: rgba(0,212,255,0.08);
+    margin: 20px 0;
+    font-size: 15px;
+    color: #d0d0e0;
+    line-height: 1.7;
+}
+.highlight.warn { border-color: #feca57; background: rgba(254,202,87,0.08); }
+.highlight.success { border-color: #00ff88; background: rgba(0,255,136,0.08); }
+.highlight.danger { border-color: #ff4757; background: rgba(255,71,87,0.08); }
+.highlight .title {
+    font-weight: 800;
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* ============ TABLES ============ */
+.table-wrap {
+    overflow-x: auto;
+    margin: 20px 0;
+    border-radius: 14px;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 14px;
+    overflow: hidden;
+}
+th, td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+th {
+    background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(255,0,110,0.15));
+    color: #00d4ff;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+td { color: #d0d0e0; }
+tbody tr:hover td { background: rgba(0,212,255,0.05); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* ============ FORMULA ============ */
+.formula {
+    text-align: center;
+    padding: 24px;
+    margin: 20px 0;
+    background: rgba(0,0,0,0.35);
+    border: 2px solid rgba(0,212,255,0.3);
+    border-radius: 16px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: clamp(18px, 2.5vw, 24px);
+    color: #00d4ff;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+}
+.formula::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(0,212,255,0.1), transparent 70%);
+    pointer-events: none;
+}
+
+/* ============ SVG CHARTS ============ */
+.chart-container {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 24px 0;
+    text-align: center;
+}
+.chart-container svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+.chart-caption {
+    margin-top: 16px;
+    font-size: 13px;
+    color: #a0a0c0;
+    font-style: italic;
+}
+
+/* ============ EXAMPLE ============ */
+.example {
+    background: linear-gradient(135deg, rgba(138,43,226,0.1), rgba(255,0,110,0.08));
+    border: 1px solid rgba(138,43,226,0.3);
+    border-radius: 16px;
+    padding: 24px;
+    margin: 24px 0;
+    position: relative;
+}
+.example .label {
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: linear-gradient(135deg, #8a2be2, #ff006e);
+    color: #fff;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+/* ============ STEP LIST ============ */
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 24px 0;
+    counter-reset: step-counter;
+}
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 14px;
+    border-left: 4px solid #00d4ff;
+    transition: all 0.3s;
+}
+.step:hover {
+    background: rgba(0,212,255,0.06);
+    transform: translateX(6px);
+}
+.step::before {
+    counter-increment: step-counter;
+    content: counter(step-counter);
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00d4ff, #ff006e);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 18px;
+    color: #fff;
+}
+.step-content h4 {
+    color: #00d4ff;
+    margin: 0 0 6px;
+    font-size: 16px;
+}
+.step-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #b0b0d0;
+}
+
+/* ============ COMPARISON ============ */
+.comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 24px 0;
+}
+.comp-card {
+    padding: 24px;
+    border-radius: 16px;
+    position: relative;
+}
+.comp-card.regression {
+    background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(0,255,136,0.05));
+    border: 2px solid rgba(0,212,255,0.4);
+}
+.comp-card.classification {
+    background: linear-gradient(135deg, rgba(255,0,110,0.1), rgba(138,43,226,0.05));
+    border: 2px solid rgba(255,0,110,0.4);
+}
+.comp-card h4 {
+    font-size: 18px;
+    margin-bottom: 14px;
+    margin-top: 0;
+}
+.comp-card.regression h4 { color: #00d4ff; }
+.comp-card.classification h4 { color: #ff006e; }
+.comp-card ul {
+    list-style: none;
+    padding: 0;
+}
+.comp-card li {
+    padding: 8px 0;
+    font-size: 14px;
+    color: #d0d0e0;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+.comp-card li::before {
+    content: '→';
+    color: #feca57;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+/* ============ SVG SCATTER PLOT ============ */
+.plot-box {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(0,212,255,0.25);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: center;
+}
+
+/* ============ TAGS ============ */
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0;
+}
+.tag {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(0,212,255,0.12);
+    color: #00d4ff;
+    border: 1px solid rgba(0,212,255,0.3);
+}
+.tag.pink { background: rgba(255,0,110,0.12); color: #ff6b9d; border-color: rgba(255,0,110,0.3); }
+.tag.yellow { background: rgba(254,202,87,0.12); color: #feca57; border-color: rgba(254,202,87,0.3); }
+.tag.green { background: rgba(0,255,136,0.12); color: #00ff88; border-color: rgba(0,255,136,0.3); }
+
+/* ============ ACCORDION ============ */
+.accordion {
+    margin: 20px 0;
+}
+.acc-item {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+.acc-item:hover { border-color: rgba(0,212,255,0.4); }
+.acc-header {
+    padding: 18px 22px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+    color: #00d4ff;
+    font-size: 16px;
+    user-select: none;
+}
+.acc-header::after {
+    content: '▼';
+    font-size: 12px;
+    transition: transform 0.3s;
+    color: #00d4ff;
+}
+.acc-item.open .acc-header::after { transform: rotate(180deg); }
+.acc-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+    padding: 0 22px;
+}
+.acc-item.open .acc-body {
+    max-height: 500px;
+    padding: 0 22px 20px;
+}
+.acc-body p { margin: 0; font-size: 14px; color: #b0b0d0; }
+
+/* ============ FINAL ============ */
+.final {
+    text-align: center;
+    padding: 60px 24px;
+    background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(255,0,110,0.1));
+    border: 2px solid rgba(0,212,255,0.3);
+    border-radius: 24px;
+    margin-top: 40px;
+}
+.final h2 {
+    font-size: clamp(24px, 3.5vw, 36px);
+    margin-bottom: 20px;
+    justify-content: center;
+    background: linear-gradient(135deg, #ffffff, #00d4ff, #ff006e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.final p {
+    font-size: 17px;
+    color: #d0d0e0;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* ============ TOP BUTTON ============ */
+.top-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00d4ff, #ff006e);
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,212,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    opacity: 0;
+    visibility: hidden;
+    z-index: 50;
+}
+.top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+}
+.top-btn:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 15px 40px rgba(0,212,255,0.6);
+}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 768px) {
+    .container { padding: 20px 16px 80px; }
+    .section { padding: 22px 18px; }
+    .comparison { grid-template-columns: 1fr; }
+    .menu-panel { width: 100%; right: -100%; }
+    .hero { padding: 40px 16px 60px; }
+    .hero-emoji { font-size: 70px; }
+    .formula { font-size: 16px; padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<button class="menu-btn" id="menuBtn">☰</button>
+
+<div class="menu-panel" id="menuPanel">
+    <button class="close-btn" id="closeBtn">×</button>
+    <h3>📚 Содержание</h3>
+    <a class="menu-item" href="#intro">1. Что такое регрессия</a>
+    <a class="menu-item" href="#examples">2. Примеры из жизни</a>
+    <a class="menu-item" href="#vs-classification">3. Регрессия vs Классификация</a>
+    <a class="menu-item" href="#how-it-works">4. Как это работает</a>
+    <a class="menu-item" href="#line-example">5. Пример с линией</a>
+    <a class="menu-item" href="#types">6. Виды регрессии</a>
+    <a class="menu-item" href="#applications">7. Где применяется</a>
+    <a class="menu-item" href="#metrics">8. Как понять, что модель хорошая</a>
+    <a class="menu-item" href="#mistakes">9. Частые ошибки</a>
+    <a class="menu-item" href="#final">10. Итог</a>
+</div>
+
+<button class="top-btn" id="topBtn">↑</button>
+
+<div class="container">
+
+<!-- ============ HERO ============ -->
+<div class="hero">
+    <span class="hero-emoji">📈</span>
+    <h1>Регрессия простыми словами</h1>
+    <p class="subtitle">Что это, где применяется и зачем нужна — на простых примерах без сложной математики</p>
+    <div class="badges">
+        <div class="badge">🎯 Понятно новичку</div>
+        <div class="badge">💡 С примерами</div>
+        <div class="badge">📊 С графиками</div>
+    </div>
+</div>
+
+<!-- ============ 1. INTRO ============ -->
+<div class="section" id="intro">
+    <span class="section-number">01</span>
+    <h2>🎯 Что такое регрессия?</h2>
+
+    <p>Представьте, что вы — <strong>риелтор</strong>. К вам приходит клиент и говорит: «Хочу продать квартиру. Сколько за неё просить?»</p>
+
+    <p>Вы смотрите на неё и мысленно прикидываете: площадь 60 м², 3-й этаж, рядом метро, новый ремонт. И выдаёте: <em>«Примерно 8–9 миллионов»</em>.</p>
+
+    <p>Как вы это сделали? Вы <strong>посмотрели на похожие квартиры</strong>, которые продавались раньше, и <strong>нашли закономерность</strong>: чем больше площадь, чем ближе метро, чем новее ремонт — тем выше цена.</p>
+
+    <div class="highlight">
+        <span class="title">💡 Простыми словами</span>
+        <strong>Регрессия</strong> — это способ научить компьютер предсказывать <strong>число</strong> (цену, температуру, зарплату, вес), находя закономерности в уже известных данных.
+    </div>
+
+    <p>Компьютер как бы «смотрит» на тысячи прошлых примеров и учится: «Если площадь такая-то и район такой-то, то цена примерно такая-то».</p>
+
+    <div class="formula">
+        ŷ = f(x₁, x₂, x₃, ...)
+    </div>
+
+    <p style="text-align: center; color: #a0a0c0; font-size: 14px; margin-top: -10px;">
+        «Мы берём признаки (x) — и получаем предсказанное число (ŷ)»
+    </p>
+</div>
+
+<!-- ============ 2. EXAMPLES ============ -->
+<div class="section" id="examples">
+    <span class="section-number">02</span>
+    <h2>🌟 Примеры регрессии из жизни</h2>
+
+    <p>Регрессия окружает нас повсюду, даже если вы об этом не задумываетесь:</p>
+
+    <div class="cards-grid">
+        <div class="card">
+            <span class="icon">🏠</span>
+            <h4>Цена недвижимости</h4>
+            <p>Дано: площадь, район, этаж, год постройки → <strong>Цена квартиры</strong></p>
+        </div>
+        <div class="card">
+            <span class="icon">🌡️</span>
+            <h4>Прогноз погоды</h4>
+            <p>Дано: время года, давление, влажность → <strong>Температура воздуха</strong></p>
+        </div>
+        <div class="card">
+            <span class="icon">🚗</span>
+            <h4>Цена автомобиля</h4>
+            <p>Дано: марка, пробег, год выпуска → <strong>Стоимость на рынке</strong></p>
+        </div>
+        <div class="card">
+            <span class="icon">💼</span>
+            <h4>Зарплата специалиста</h4>
+            <p>Дано: опыт, навыки, город → <strong>Ожидаемый оклад</strong></p>
+        </div>
+        <div class="card">
+            <span class="icon">🍦</span>
+            <h4>Продажи мороженого</h4>
+            <p>Дано: температура на улице → <strong>Сколько купят мороженого</strong></p>
+        </div>
+        <div class="card">
+            <span class="icon">⚡</span>
+            <h4>Потребление энергии</h4>
+            <p>Дано: месяц, день недели, погода → <strong>Сколько кВт·ч нужно городу</strong></p>
+        </div>
+        <div class="card">
+            <span class="icon">📱</span>
+            <h4>Длительность звонка</h4>
+            <p>Дано: история клиента → <strong>Сколько минут он будет говорить</strong></p>
+        </div>
+        <div class="card">
+            <span class="icon">🎬</span>
+            <h4>Рейтинг фильма</h4>
+            <p>Дано: бюджет, жанр, актёры → <strong>Ожидаемый IMDb-рейтинг</strong></p>
+        </div>
+    </div>
+
+    <div class="highlight success">
+        <span class="title">✅ Общая идея</span>
+        Везде, где нам нужно предсказать <strong>число</strong>, а не «да/нет» или «красный/зелёный/синий» — это <strong>регрессия</strong>.
+    </div>
+</div>
+
+<!-- ============ 3. VS CLASSIFICATION ============ -->
+<div class="section" id="vs-classification">
+    <span class="section-number">03</span>
+    <h2>⚖️ Чем регрессия отличается от классификации?</h2>
+
+    <p>В машинном обучении есть два главных типа задач. И они часто путаются у новичков. Давайте разберёмся раз и навсегда.</p>
+
+    <div class="comparison">
+        <div class="comp-card regression">
+            <h4>📈 РЕГРЕССИЯ</h4>
+            <p style="font-size: 14px; color: #d0d0e0;">Отвечает на вопрос: <strong style="color:#00d4ff;">«СКОЛЬКО?»</strong></p>
+            <ul>
+                <li>Сколько стоит квартира? → <b>8 500 000 ₽</b></li>
+                <li>Какая завтра температура? → <b>+23.5°C</b></li>
+                <li>Сколько мороженого купят? → <b>432 штуки</b></li>
+                <li>Какая зарплата у сеньора? → <b>250 000 ₽</b></li>
+            </ul>
+        </div>
+        <div class="comp-card classification">
+            <h4>🏷️ КЛАССИФИКАЦИЯ</h4>
+            <p style="font-size: 14px; color: #d0d0e0;">Отвечает на вопрос: <strong style="color:#ff006e;">«ЧТО ЭТО?»</strong></p>
+            <ul>
+                <li>Это спам или не спам? → <b>СПАМ</b></li>
+                <li>Кошка или собака? → <b>КОШКА</b></li>
+                <li>Клиент уйдёт? → <b>ДА</b></li>
+                <li>Заболевание есть? → <b>НЕТ</b></li>
+            </ul>
+        </div>
+    </div>
+
+    <h3>📊 Как быстро отличить?</h3>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Вопрос</th>
+                    <th>Регрессия</th>
+                    <th>Классификация</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>Что предсказываем?</b></td>
+                    <td>Число (может быть любым)</td>
+                    <td>Метку из списка</td>
+                </tr>
+                <tr>
+                    <td><b>Пример ответа</b></td>
+                    <td>7 234 512 ₽</td>
+                    <td>«Дорого» / «Дёшево»</td>
+                </tr>
+                <tr>
+                    <td><b>Сколько вариантов ответа?</b></td>
+                    <td>Бесконечно много</td>
+                    <td>Конечное число (обычно 2–10)</td>
+                </tr>
+                <tr>
+                    <td><b>Можно ли сложить ответы?</b></td>
+                    <td>✅ Да (цена + цена = цена)</td>
+                    <td>❌ Нет (кошка + собака = ?)</td>
+                </tr>
+                <tr>
+                    <td><b>Как оценить ошибку?</b></td>
+                    <td>RMSE, MAE, R²</td>
+                    <td>Accuracy, Precision, F1</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="highlight warn">
+        <span class="title">⚠️ Ловушка</span>
+        Если вы предсказываете «цену в рублях» — это регрессия. Но если вы делите цену на категории «дешёвая / средняя / дорогая» и предсказываете именно категорию — это <strong>уже классификация</strong>, хотя задача была про деньги!
+    </div>
+</div>
+
+<!-- ============ 4. HOW IT WORKS ============ -->
+<div class="section" id="how-it-works">
+    <span class="section-number">04</span>
+    <h2>🔧 Как работает регрессия — по шагам</h2>
+
+    <p>Давайте представим, что мы учим компьютер предсказывать цену дома. Вот как это происходит:</p>
+
+    <div class="steps">
+        <div class="step">
+            <div class="step-content">
+                <h4>Собираем данные</h4>
+                <p>Находим 1000 домов, которые уже продавались. Для каждого знаем: площадь, число комнат, год постройки и — самое главное — <strong>реальную цену продажи</strong>.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-content">
+                <h4>Ищем закономерности</h4>
+                <p>Компьютер анализирует: «Ага, дома с большей площадью стоят дороже. А если год постройки свежее — тоже дороже». Он находит <strong>связь между признаками и ценой</strong>.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-content">
+                <h4>Строим формулу</h4>
+                <p>Получаем что-то вроде: <em>Цена = 50 000 × площадь + 200 000 × комнат + ...</em>. Это и есть <strong>модель регрессии</strong>.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-content">
+                <h4>Проверяем на новых данных</h4>
+                <p>Берём 200 домов, которые модель <strong>не видела</strong>. Просим её предсказать цену и сравниваем с реальной. Если ошибка маленькая — модель хорошая.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-content">
+                <h4>Используем для предсказаний</h4>
+                <p>Теперь, когда приходит новый дом, мы просто подставляем его характеристики в формулу — и получаем цену!</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 5. LINE EXAMPLE ============ -->
+<div class="section" id="line-example">
+    <span class="section-number">05</span>
+    <h2>📊 Пример с линией: смотрим глазами</h2>
+
+    <p>Самая простая регрессия — когда у нас <strong>один признак</strong> и мы хотим предсказать <strong>одно число</strong>.</p>
+
+    <p>Например: давайте попробуем предсказать <strong>цену квартиры по её площади</strong>.</p>
+
+    <div class="plot-box">
+        <svg viewBox="0 0 600 380" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#ff006e"/>
+                    <stop offset="100%" stop-color="#00d4ff"/>
+                </linearGradient>
+                <radialGradient id="dotGrad">
+                    <stop offset="0%" stop-color="#00d4ff"/>
+                    <stop offset="100%" stop-color="#0088cc"/>
+                </radialGradient>
+            </defs>
+
+            <!-- Grid -->
+            <line x1="80" y1="40" x2="80" y2="320" stroke="#444" stroke-width="1"/>
+            <line x1="80" y1="320" x2="550" y2="320" stroke="#444" stroke-width="1"/>
+
+            <!-- Y axis labels -->
+            <text x="40" y="50" fill="#a0a0c0" font-size="12">12 млн</text>
+            <text x="40" y="120" fill="#a0a0c0" font-size="12">9 млн</text>
+            <text x="40" y="190" fill="#a0a0c0" font-size="12">6 млн</text>
+            <text x="40" y="260" fill="#a0a0c0" font-size="12">3 млн</text>
+            <text x="50" y="325" fill="#a0a0c0" font-size="12">0</text>
+
+            <!-- X axis labels -->
+            <text x="120" y="345" fill="#a0a0c0" font-size="12">30 м²</text>
+            <text x="220" y="345" fill="#a0a0c0" font-size="12">50 м²</text>
+            <text x="320" y="345" fill="#a0a0c0" font-size="12">70 м²</text>
+            <text x="420" y="345" fill="#a0a0c0" font-size="12">90 м²</text>
+            <text x="510" y="345" fill="#a0a0c0" font-size="12">110 м²</text>
+
+            <!-- Real data points (dots) -->
+            <circle cx="110" cy="290" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="130" cy="270" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="150" cy="280" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="170" cy="245" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="195" cy="230" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="220" cy="215" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="245" cy="200" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="270" cy="185" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="290" cy="175" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="320" cy="150" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="345" cy="145" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="370" cy="125" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="400" cy="110" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="425" cy="95" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="455" cy="85" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="480" cy="70" r="6" fill="#00d4ff" opacity="0.7"/>
+            <circle cx="510" cy="55" r="6" fill="#00d4ff" opacity="0.7"/>
+
+            <!-- Regression line -->
+            <line x1="90" y1="295" x2="530" y2="50" stroke="url(#lineGrad)" stroke-width="4" stroke-linecap="round"/>
+
+            <!-- Legend -->
+            <circle cx="120" cy="30" r="5" fill="#00d4ff" opacity="0.7"/>
+            <text x="135" y="35" fill="#a0a0c0" font-size="13">Реальные продажи</text>
+            <line x1="280" y1="30" x2="310" y2="30" stroke="url(#lineGrad)" stroke-width="4"/>
+            <text x="320" y="35" fill="#a0a0c0" font-size="13">Линия регрессии (модель)</text>
+
+            <!-- Axis titles -->
+            <text x="290" y="370" fill="#00d4ff" font-size="14" font-weight="bold">Площадь квартиры (м²)</text>
+            <text x="15" y="180" fill="#00d4ff" font-size="14" font-weight="bold" transform="rotate(-90 25 180)">Цена (₽)</text>
+        </svg>
+        <p class="chart-caption">Каждая синяя точка — реальная квартира. Розово-голубая линия — «усреднённая закономерность», которую нашла модель.</p>
+    </div>
+
+    <p>Что мы видим?</p>
+    <ul style="color: #d0d0e0; padding-left: 24px; margin: 14px 0; font-size: 15px; line-height: 1.8;">
+        <li>Каждая <strong style="color: #00d4ff;">синяя точка</strong> — это реальная квартира из истории продаж.</li>
+        <li>Чем правее точка, тем больше площадь.</li>
+        <li>Чем выше точка, тем дороже квартира.</li>
+        <li><strong>Линия</strong> — это и есть модель. Она показывает «среднюю» зависимость: если площадь 50 м², цена примерно 4 млн ₽.</li>
+    </ul>
+
+    <div class="highlight success">
+        <span class="title">🎯 Как модель делает предсказание?</span>
+        Вы даёте ей площадь — она смотрит на линию — и выдаёт цену. Например, для 70 м² модель скажет примерно <strong>6 500 000 ₽</strong>.
+    </div>
+
+    <h3>🤔 А если точки не ложатся на прямую?</h3>
+    <p>Так обычно и бывает! Разброс — нормальная часть реальных данных. Но чем <strong>ближе</strong> точки к линии, тем <strong>точнее</strong> модель.</p>
+
+    <div class="plot-box">
+        <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+            <!-- Хорошая модель -->
+            <text x="150" y="30" fill="#00ff88" font-size="14" font-weight="bold">✅ Хорошая модель</text>
+            <line x1="80" y1="40" x2="80" y2="170" stroke="#444"/>
+            <line x1="80" y1="170" x2="280" y2="170" stroke="#444"/>
+            <line x1="85" y1="160" x2="275" y2="55" stroke="#00ff88" stroke-width="3"/>
+            <circle cx="100" cy="155" r="5" fill="#00d4ff"/>
+            <circle cx="130" cy="135" r="5" fill="#00d4ff"/>
+            <circle cx="160" cy="125" r="5" fill="#00d4ff"/>
+            <circle cx="190" cy="105" r="5" fill="#00d4ff"/>
+            <circle cx="220" cy="90" r="5" fill="#00d4ff"/>
+            <circle cx="250" cy="75" r="5" fill="#00d4ff"/>
+
+            <!-- Плохая модель -->
+            <text x="450" y="30" fill="#ff4757" font-size="14" font-weight="bold">❌ Плохая модель</text>
+            <line x1="380" y1="40" x2="380" y2="170" stroke="#444"/>
+            <line x1="380" y1="170" x2="580" y2="170" stroke="#444"/>
+            <line x1="385" y1="120" x2="575" y2="120" stroke="#ff4757" stroke-width="3"/>
+            <circle cx="400" cy="155" r="5" fill="#00d4ff"/>
+            <circle cx="430" cy="60" r="5" fill="#00d4ff"/>
+            <circle cx="460" cy="140" r="5" fill="#00d4ff"/>
+            <circle cx="490" cy="80" r="5" fill="#00d4ff"/>
+            <circle cx="520" cy="150" r="5" fill="#00d4ff"/>
+            <circle cx="550" cy="75" r="5" fill="#00d4ff"/>
+        </svg>
+        <p class="chart-caption">Слева — точки кучкуются около линии. Справа — разброс огромный, линия «не работает».</p>
+    </div>
+</div>
+
+<!-- ============ 6. TYPES ============ -->
+<div class="section" id="types">
+    <span class="section-number">06</span>
+    <h2>🎨 Виды регрессии</h2>
+
+    <p>Есть несколько разновидностей регрессии. Не пугайтесь — сейчас разберём каждую простыми словами.</p>
+
+    <div class="accordion">
+        <div class="acc-item open">
+            <div class="acc-header">📏 Линейная регрессия — «прямая линия»</div>
+            <div class="acc-body">
+                <p><strong>Идея:</strong> мы проводим <strong>прямую линию</strong> через точки данных. Модель считает, что связь между признаком и ценой линейная: если площадь растёт на 1 м², цена растёт на одну и ту же величину.</p>
+                <p style="margin-top: 10px;"><strong>Пример:</strong> каждый м² прибавляет примерно 100 000 ₽. Просто и понятно.</p>
+                <p style="margin-top: 10px;"><em>Когда использовать:</em> когда данные «ложатся» на прямую, и связь простая.</p>
+            </div>
+        </div>
+        <div class="acc-item">
+            <div class="acc-header">🔷 Ridge — «прямая, но с тормозами»</div>
+            <div class="acc-body">
+                <p><strong>Проблема:</strong> если признаков много (например, 80 разных характеристик дома), линейная регрессия начинает «запоминать» случайные шумы и предсказывать плохо.</p>
+                <p style="margin-top: 10px;"><strong>Решение Ridge:</strong> модель штрафуется за слишком большие коэффициенты. Она как бы едет «с тормозами» — не разгоняется и остаётся стабильной.</p>
+                <p style="margin-top: 10px;"><em>Когда использовать:</em> много признаков, есть мультиколлинеарность (признаки дублируют друг друга).</p>
+            </div>
+        </div>
+        <div class="acc-item">
+            <div class="acc-header">🎯 Lasso — «оставляет только важное»</div>
+            <div class="acc-body">
+                <p><strong>Идея:</strong> Lasso штрафует модель так, что <strong>неважные признаки обнуляются</strong>. Модель как бы сама говорит: «Этот признак не нужен — убираем».</p>
+                <p style="margin-top: 10px;"><strong>Пример:</strong> было 80 признаков — после Lasso осталось 20 самых важных.</p>
+                <p style="margin-top: 10px;"><em>Когда использовать:</em> когда хочется понять, какие признаки реально влияют на цену, а какие — «мусор».</p>
+            </div>
+        </div>
+        <div class="acc-item">
+            <div class="acc-header">🔀 ElasticNet — «компромисс»</div>
+            <div class="acc-body">
+                <p><strong>Идея:</strong> объединяет лучшее от Ridge и Lasso. Немного уменьшает коэффициенты и немного обнуляет лишние признаки.</p>
+                <p style="margin-top: 10px;"><em>Когда использовать:</em> когда признаки сильно коррелируют друг с другом, и чистый Lasso может «запутаться».</p>
+            </div>
+        </div>
+        <div class="acc-item">
+            <div class="acc-header">🌊 Полиномиальная регрессия — «изогнутая линия»</div>
+            <div class="acc-body">
+                <p><strong>Идея:</strong> вместо прямой линии модель проводит кривую. Например, рост детей от возраста — это не прямая: в младенчестве растут быстро, потом медленнее.</p>
+                <p style="margin-top: 10px;"><em>Когда использовать:</em> когда связь явно нелинейная, но данные не очень сложные.</p>
+            </div>
+        </div>
+        <div class="acc-item">
+            <div class="acc-header">🌲 Дерево решений и лес — «правила if-else»</div>
+            <div class="acc-body">
+                <p><strong>Идея:</strong> вместо формулы модель строит дерево правил: «Если площадь > 80 м² И район = центр, то цена = 12 млн».</p>
+                <p style="margin-top: 10px;"><em>Когда использовать:</em> когда связь между признаками и ценой сложная и нелинейная.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 7. APPLICATIONS ============ -->
+<div class="section" id="applications">
+    <span class="section-number">07</span>
+    <h2>🌍 Где регрессия применяется в реальной жизни</h2>
+
+    <p>Регрессия — один из самых востребованных инструментов в бизнесе. Вот где её используют по-настоящему:</p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Область</th>
+                    <th>Что предсказывают</th>
+                    <th>Зачем это бизнесу</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>🏦 <b>Банки</b></td>
+                    <td>Сколько клиент сможет платить по кредиту</td>
+                    <td>Оценить риски невозврата</td>
+                </tr>
+                <tr>
+                    <td>🛒 <b>Маркетплейсы</b></td>
+                    <td>Сколько товаров продастся в следующем месяце</td>
+                    <td>Спланировать поставки на склад</td>
+                </tr>
+                <tr>
+                    <td>🏭 <b>Производство</b></td>
+                    <td>Сколько часов займёт изготовление партии</td>
+                    <td>Оптимизировать график работы</td>
+                </tr>
+                <tr>
+                    <td>📱 <b>IT-компании</b></td>
+                    <td>Сколько пользователей зайдёт в приложение</td>
+                    <td>Заранее подготовить серверы</td>
+                </tr>
+                <tr>
+                    <td>🏥 <b>Медицина</b></td>
+                    <td>Прогноз длительности лечения</td>
+                    <td>Планирование койко-мест</td>
+                </tr>
+                <tr>
+                    <td>🚚 <b>Логистика</b></td>
+                    <td>Сколько топлива уйдёт на маршрут</td>
+                    <td>Сократить расходы</td>
+                </tr>
+                <tr>
+                    <td>🎬 <b>Стриминг</b></td>
+                    <td>Сколько человек посмотрят фильм</td>
+                    <td>Решить, покупать ли права</td>
+                </tr>
+                <tr>
+                    <td>🌾 <b>Сельское хозяйство</b></td>
+                    <td>Прогноз урожайности</td>
+                    <td>Планировать закупки и продажи</td>
+                </tr>
+                <tr>
+                    <td>⛽ <b>Нефтегаз (ТИУ!)</b></td>
+                    <td>Дебит скважины, давление в пласте</td>
+                    <td>Оптимизировать добычу</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="highlight">
+        <span class="title">💼 Почему это важно для карьеры</span>
+        Регрессия — <strong>базовый навык</strong> для аналитика данных, ML-инженера, дата-саентиста. Если вы умеете строить регрессионные модели, вы можете решать <strong>до 70% реальных бизнес-задач</strong>: прогнозирование выручки, оценка рисков, оптимизация процессов.
+    </div>
+</div>
+
+<!-- ============ 8. METRICS ============ -->
+<div class="section" id="metrics">
+    <span class="section-number">08</span>
+    <h2>📏 Как понять, что модель хорошая?</h2>
+
+    <p>Мы обучили модель. Как узнать — она хорошо предсказывает или плохо? Для этого есть <strong>метрики качества</strong>. Разберём самые важные.</p>
+
+    <h3>📉 RMSE — «средняя ошибка в рублях»</h3>
+    <p>Представьте: модель предсказывает цены на квартиры. Реальные цены — 8 млн, 6 млн, 10 млн. Предсказания модели — 7.5 млн, 6.5 млн, 9 млн. RMSE показывает <strong>среднее расстояние</strong> между предсказанием и реальностью. Например, RMSE = 250 000 ₽ означает «в среднем мы ошибаемся на четверть миллиона».</p>
+
+    <div class="highlight success">
+        <span class="title">✅ Чем меньше RMSE — тем лучше</span>
+        RMSE всегда измеряется в тех же единицах, что и целевая переменная (рубли, градусы, штуки).
+    </div>
+
+    <h3>📊 R² — «процент объяснённого»</h3>
+    <p>R² (R-квадрат) показывает, <strong>какую долю изменений</strong> модель смогла объяснить. Значения от 0 до 1:</p>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>R²</th>
+                    <th>Что означает</th>
+                    <th>Как оценивать</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><b>0.0</b></td>
+                    <td>Модель не лучше, чем просто среднее</td>
+                    <td>❌ Ужасная модель</td>
+                </tr>
+                <tr>
+                    <td><b>0.5</b></td>
+                    <td>Объяснила половину закономерностей</td>
+                    <td>⚠️ Слабо</td>
+                </tr>
+                <tr>
+                    <td><b>0.7</b></td>
+                    <td>Неплохо, но есть куда расти</td>
+                    <td>🟡 Удовлетворительно</td>
+                </tr>
+                <tr>
+                    <td><b>0.85</b></td>
+                    <td>Хорошая модель</td>
+                    <td>🟢 Хорошо</td>
+                </tr>
+                <tr>
+                    <td><b>0.95+</b></td>
+                    <td>Отличная модель</td>
+                    <td>✅ Отлично (или переобучение!)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>📐 MAE — «средняя ошибка без больших штрафов»</h3>
+    <p>MAE похож на RMSE, но не так сильно «наказывает» модель за большие ошибки. Иногда это важно: если в данных есть выбросы (например, элитные квартиры за 100 млн), RMSE сильно вырастет, а MAE — нет.</p>
+
+    <div class="highlight warn">
+        <span class="title">⚠️ Важное правило</span>
+        Слишком хороший R² (например, 0.999) — это <strong>подозрительно</strong>. Скорее всего, модель «подсмотрела» ответ (утечка данных) или просто переобучилась. Реальные данные всегда содержат шум.
+    </div>
+</div>
+
+<!-- ============ 9. MISTAKES ============ -->
+<div class="section" id="mistakes">
+    <span class="section-number">09</span>
+    <h2>🐛 Частые ошибки новичков</h2>
+
+    <p>Регрессия кажется простой, но новички часто наступают на одни и те же грабли. Вот главные ошибки:</p>
+
+    <div class="cards-grid">
+        <div class="card">
+            <span class="icon">🚨</span>
+            <h4>Обучили на всём сразу</h4>
+            <p>Если обучать модель на всех данных и потом проверять на них же — модель просто «запомнит» ответы. Нужно <strong>делить данные</strong> на обучающую и тестовую части.</p>
+        </div>
+        <div class="card">
+            <span class="icon">📉</span>
+            <h4>Переобучение</h4>
+            <p>Модель идеально работает на train, но «падает» на новых данных. Это как студент, который вызубрил ответы к экзамену, но не понял тему.</p>
+        </div>
+        <div class="card">
+            <span class="icon">🕳️</span>
+            <h4>Игнорирование пропусков</h4>
+            <p>Если в данных есть пустые ячейки, а вы их просто проигнорировали — модель будет работать плохо. Пропуски нужно обрабатывать осознанно.</p>
+        </div>
+        <div class="card">
+            <span class="icon">📐</span>
+            <h4>Забыли про масштаб</h4>
+            <p>Если площадь дома измеряется в тысячах, а число комнат — в единицах, модель может решить, что площадь «важнее», просто потому что числа больше.</p>
+        </div>
+        <div class="card">
+            <span class="icon">📊</span>
+            <h4>Не посмотрели на данные</h4>
+            <p>Некоторые думают, что можно сразу пихать данные в модель. Нет! Сначала нужно <strong>изучить данные глазами</strong>: распределения, корреляции, выбросы.</p>
+        </div>
+        <div class="card">
+            <span class="icon">🎯</span>
+            <h4>Гонятся за R² = 1.0</h4>
+            <p>Идеальный R² — это красный флаг. Реальные данные всегда шумные. Модель с R² = 0.9 на новых данных гораздо ценнее, чем модель с R² = 0.99 на train.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 10. FINAL ============ -->
+<div class="final" id="final">
+    <h2>🎓 Подведём итоги</h2>
+    <p>Регрессия — это способ научить компьютер предсказывать <strong>числа</strong>: цены, температуры, зарплаты, урожайность. Она используется почти везде — от банков и маркетплейсов до нефтегазовой отрасли.</p>
+    <p style="margin-top: 20px;">Главное, что нужно помнить:</p>
+    <div class="tags" style="justify-content: center; margin-top: 20px;">
+        <span class="tag">📈 Предсказывает число</span>
+        <span class="tag pink">🎯 А не класс</span>
+        <span class="tag yellow">📊 RMSE / MAE / R²</span>
+        <span class="tag green">🚨 Делите данные!</span>
+        <span class="tag">🛠️ Обрабатывайте пропуски</span>
+        <span class="tag pink">📏 Следите за масштабом</span>
+    </div>
+    <p style="margin-top: 30px; font-size: 18px; color: #00d4ff;">
+        <strong>Теперь вы понимаете основу машинного обучения! 🚀</strong>
+    </p>
+</div>
+
+</div>
+
+<script>
+// ============ PROGRESS BAR ============
+const progressBar = document.getElementById('progressBar');
+window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = (scrollTop / docHeight) * 100;
+    progressBar.style.width = progress + '%';
+});
+
+// ============ MENU ============
+const menuBtn = document.getElementById('menuBtn');
+const menuPanel = document.getElementById('menuPanel');
+const closeBtn = document.getElementById('closeBtn');
+
+menuBtn.addEventListener('click', () => {
+    menuPanel.classList.toggle('open');
+});
+
+closeBtn.addEventListener('click', () => {
+    menuPanel.classList.remove('open');
+});
+
+document.querySelectorAll('.menu-item').forEach(item => {
+    item.addEventListener('click', () => {
+        menuPanel.classList.remove('open');
+    });
+});
+
+document.addEventListener('click', (e) => {
+    if (menuPanel.classList.contains('open') &&
+        !menuPanel.contains(e.target) &&
+        !menuBtn.contains(e.target)) {
+        menuPanel.classList.remove('open');
+    }
+});
+
+// ============ ACCORDION ============
+document.querySelectorAll('.acc-header').forEach(header => {
+    header.addEventListener('click', () => {
+        const item = header.parentElement;
+        item.classList.toggle('open');
+    });
+});
+
+// ============ TOP BUTTON ============
+const topBtn = document.getElementById('topBtn');
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) {
+        topBtn.classList.add('visible');
+    } else {
+        topBtn.classList.remove('visible');
+    }
+});
+
+topBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ============ SMOOTH SCROLL ============
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
+});
+</script>
+
+</body>
+</html>
