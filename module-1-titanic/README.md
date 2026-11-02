@@ -29,11 +29,11 @@ import joblib
 import requests
 from io import BytesIO
 
-BASE_URL = "https://raw.githubusercontent.com/Pankyxa/ML_Spirin/main/module-1-titanic"
+BASE_URL = "https://raw.githubusercontent.com/Pankyxa/ml-course-Belozyorov/master/module-1-titanic"
 model = joblib.load(BytesIO(requests.get(f"{BASE_URL}/models/lr_model.pkl").content))
 ```
 
-Пока репозиторий не опубликован, те же файлы лежат в `models/`.
+Те же файлы лежат в `models/`. Raw-ссылка указывает на ветку `master` репозитория `ml-course-Belozyorov`.
 
 ## Структура
 
